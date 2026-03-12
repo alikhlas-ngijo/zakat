@@ -1,4 +1,4 @@
 // config.js
 const CONFIG = {
-    API_URL: 'https://script.google.com/macros/s/AKfycbx4nkGkcs-pVXFMTEqcIvUXMbMFWTWBGJwhQLHfkNs_-fn-zI9O9MVYs9AkO6OF4e7o/exec' // Ganti dengan URL Apps Script Anda
+    API_URL: 'https://script.google.com/macros/s/AKfycbzWGLiUYWNuCJ-uHAagoDF9NQnhs1m9lJZKZxjo_YN-xvfm422sb8sj484sOCrt7DVj/exec' // Ganti dengan URL Apps Script Anda
 };
