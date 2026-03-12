@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Distribusi Zakat Fitrah</title>
+    <!-- Bootstrap 5 + Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .table th, .table td { vertical-align: middle; }
+        .badge { font-size: 0.9em; padding: 0.5em 0.75em; }
+        .action-bar {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+        }
+        .mustahik-name {
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-success fixed-top shadow">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="bi bi-building"></i> Admin Masjid Al-Ikhlas</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Sidebar Offcanvas -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Menu Admin</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link" href="dashboard.html"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link active" href="fitrah.html"><i class="bi bi-archive"></i> Zakat Fitrah</a></li>
+                <li class="nav-item"><a class="nav-link" href="mal.html"><i class="bi bi-cash-stack"></i> Zakat Mal</a></li>
+                <li class="nav-item"><a class="nav-link" href="fidyah.html"><i class="bi bi-heart"></i> Zakat Fidyah</a></li>
+                <li class="nav-item"><a class="nav-link" href="pezakat.html"><i class="bi bi-people"></i> Data Pezakat</a></li>
+                <li class="nav-item"><a class="nav-link" href="mustahik.html"><i class="bi bi-hand-index-thumb"></i> Data Mustahik</a></li>
+                <li class="nav-item"><a class="nav-link" href="lokasi.html"><i class="bi bi-geo-alt"></i> Lokasi Izin</a></li>
+                <li class="nav-item"><a class="nav-link" href="sesi.html"><i class="bi bi-calendar-check"></i> Sesi Absensi</a></li>
+                <li class="nav-item"><a class="nav-link" href="laporan.html"><i class="bi bi-file-text"></i> Laporan</a></li>
+                <li class="nav-item"><a class="nav-link" href="settings.html"><i class="bi bi-gear"></i> Pengaturan</a></li>
+                <li class="nav-item"><a class="nav-link text-danger" href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mt-5 pt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="text-success">📋 Data Distribusi Zakat Fitrah</h2>
+            <div>
+                <!-- Tombol Undo/Redo & Hapus Terpilih -->
+                <button class="btn btn-secondary me-2" id="undoBtn" onclick="undo()" disabled><i class="bi bi-arrow-return-left"></i> Undo</button>
+                <button class="btn btn-secondary me-2" id="redoBtn" onclick="redo()" disabled><i class="bi bi-arrow-return-right"></i> Redo</button>
+                <button class="btn btn-danger me-2" id="deleteSelectedBtn" onclick="deleteSelected()" disabled><i class="bi bi-trash"></i> Hapus Terpilih</button>
+                <button class="btn btn-success me-2" onclick="tambahData()"><i class="bi bi-plus-circle"></i> Tambah Data</button>
+                <button class="btn btn-info me-2" onclick="exportCSV()"><i class="bi bi-download"></i> Ekspor CSV</button>
+                <button class="btn btn-warning" onclick="document.getElementById('importFile').click()"><i class="bi bi-upload"></i> Impor CSV</button>
+                <input type="file" id="importFile" accept=".csv" style="display: none;" onchange="importCSV(this.files[0])">
+            </div>
+        </div>
+
+        <!-- Action Bar: Filter Status + RT + Search -->
+        <div class="action-bar">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-success text-white"><i class="bi bi-funnel"></i></span>
+                        <select class="form-select" id="filterStatus" onchange="filterData()">
+                            <option value="semua">Semua Status</option>
+                            <option value="belum disalurkan">Belum Disalurkan</option>
+                            <option value="sudah disalurkan">Sudah Disalurkan</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-success text-white"><i class="bi bi-house-door"></i></span>
+                        <select class="form-select" id="filterRT" onchange="filterData()">
+                            <option value="">Semua RT</option>
+                            <option value="01">RT 01</option>
+                            <option value="02">RT 02</option>
+                            <option value="03">RT 03</option>
+                            <option value="04">RT 04</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-success text-white"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" id="searchInput" placeholder="Cari nama..." onkeyup="filterData()">
+                        <button class="btn btn-outline-secondary" type="button" onclick="clearSearch()"><i class="bi bi-x"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabel Data -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-success text-center">
+                    <tr>
+                        <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
+                        <th>No</th>
+                        <th>Nama Muzaki</th>
+                        <th>Jml Jiwa</th>
+                        <th>Beras (kg)</th>
+                        <th>Uang (Rp)</th>
+                        <th>RT</th>
+                        <th>Tgl Input</th>
+                        <th>Status</th>
+                        <th>Tgl Salur</th>
+                        <th>Penerima</th>
+                        <th>Input By</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr><td colspan="13" class="text-center">Memuat data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Modal Tambah / Edit Data -->
+    <div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="formModalLabel">Tambah Zakat Fitrah</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="zakatForm">
+                        <input type="hidden" id="editId" value="">
+                        <div class="mb-3">
+                            <label for="nama" class="form-label">Nama Muzaki</label>
+                            <input type="text" class="form-control" id="nama" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="jiwa" class="form-label">Jumlah Jiwa</label>
+                            <input type="number" class="form-control" id="jiwa" min="1" value="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="beras" class="form-label">Beras (kg)</label>
+                            <input type="number" step="0.1" class="form-control" id="beras" value="0" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="uang" class="form-label">Uang (Rp)</label>
+                            <input type="number" class="form-control" id="uang" value="0" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="rt" class="form-label">RT</label>
+                            <select class="form-select" id="rt" required>
+                                <option value="">Pilih RT</option>
+                                <option value="01">01</option>
+                                <option value="02">02</option>
+                                <option value="03">03</option>
+                                <option value="04">04</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_mustahik" class="form-label">Penerima (pilih dari daftar)</label>
+                            <select class="form-select" id="id_mustahik">
+                                <option value="">-- Pilih Penerima --</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="penerima_manual" class="form-label">Nama Penerima (isi jika tidak memilih dari daftar)</label>
+                            <input type="text" class="form-control" id="penerima_manual">
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">Simpan</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Pilih Mustahik untuk Penyaluran -->
+    <div class="modal fade" id="salurkanModal" tabindex="-1" aria-labelledby="salurkanModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="salurkanModalLabel">Pilih Penerima Zakat</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="salurkanMustahik" class="form-label">Penerima (pilih dari daftar)</label>
+                        <select class="form-select" id="salurkanMustahik">
+                            <option value="">-- Pilih Penerima --</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="salurkanManual" class="form-label">Atau isi manual jika tidak ada di daftar</label>
+                        <input type="text" class="form-control" id="salurkanManual" placeholder="Nama penerima">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-success" onclick="konfirmasiSalurkan()">Salurkan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script>
+        // ====================== FUNGSI CACHE ======================
+        function getCachedData(endpoint) {
+            const cached = sessionStorage.getItem('cache_' + endpoint);
+            if (!cached) return null;
+            try {
+                return JSON.parse(cached);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function setCachedData(endpoint, data) {
+            sessionStorage.setItem('cache_' + endpoint, JSON.stringify(data));
+        }
+
+        // ====================== CEK LOGIN ======================
+        let user = JSON.parse(localStorage.getItem('user'));
+        if (!user || user.role !== 'admin') window.location.href = '../login.html';
+
+        function logout() { localStorage.removeItem('user'); window.location.href = '../login.html'; }
+
+        // ====================== GLOBAL ======================
+        let allData = [];
+        let filteredData = [];
+        let mustahikList = [];
+        let mustahikMap = {};
+        let modalInstance, salurkanModalInstance;
+        let hargaPerKg = 18000;
+        let berasPerJiwa = 2.5;
+        let currentSalurkanId = null;
+
+        // ====================== UNDO/REDO & MULTIPLE DELETE ======================
+        let undoStack = [];
+        let redoStack = [];
+        const MAX_UNDO_STACK = 10;
+
+        function pushToUndo(action, items) {
+            undoStack.push({ action, items: items.map(item => ({ ...item })) }); // salin
+            if (undoStack.length > MAX_UNDO_STACK) undoStack.shift();
+            redoStack = [];
+            updateUndoRedoButtons();
+        }
+
+        function updateUndoRedoButtons() {
+            document.getElementById('undoBtn').disabled = undoStack.length === 0;
+            document.getElementById('redoBtn').disabled = redoStack.length === 0;
+        }
+
+        async function undo() {
+            if (undoStack.length === 0) return;
+            const last = undoStack.pop();
+            if (last.action === 'delete') {
+                const newIds = [];
+                for (let item of last.items) {
+                    const newItem = { ...item };
+                    delete newItem.id; // biarkan client generate id baru
+                    newItem.id = Date.now().toString() + Math.random().toString(36).substr(2, 5);
+                    try {
+                        await apiPost('fitrah', newItem);
+                        newIds.push(newItem.id);
+                    } catch (error) {
+                        alert('Gagal mengembalikan data: ' + error);
+                        undoStack.push(last);
+                        updateUndoRedoButtons();
+                        return;
+                    }
+                }
+                last.newIds = newIds;
+                redoStack.push(last);
+                await loadData(); // refresh data
+            }
+            updateUndoRedoButtons();
+        }
+
+        async function redo() {
+            if (redoStack.length === 0) return;
+            const last = redoStack.pop();
+            if (last.action === 'delete' && last.newIds) {
+                for (let id of last.newIds) {
+                    try {
+                        await apiDelete('fitrah', id);
+                    } catch (error) {
+                        alert('Gagal menghapus data: ' + error);
+                        redoStack.push(last);
+                        updateUndoRedoButtons();
+                        return;
+                    }
+                }
+                undoStack.push(last);
+                await loadData(); // refresh data
+            }
+            updateUndoRedoButtons();
+        }
+
+        // ====================== FUNGSI CHECKBOX ======================
+        function toggleSelectAll(checkbox) {
+            const checkboxes = document.querySelectorAll('.rowCheckbox');
+            checkboxes.forEach(cb => cb.checked = checkbox.checked);
+            updateDeleteSelectedButton();
+        }
+
+        function updateDeleteSelectedButton() {
+            const selected = document.querySelectorAll('.rowCheckbox:checked').length;
+            document.getElementById('deleteSelectedBtn').disabled = selected === 0;
+        }
+
+        function getSelectedIds() {
+            const checkboxes = document.querySelectorAll('.rowCheckbox:checked');
+            return Array.from(checkboxes).map(cb => cb.value);
+        }
+
+        async function deleteSelected() {
+            const ids = getSelectedIds();
+            if (ids.length === 0) return;
+            if (!confirm(`Hapus ${ids.length} data terpilih?`)) return;
+
+            const itemsToDelete = allData.filter(d => ids.includes(d.id));
+            pushToUndo('delete', itemsToDelete);
+
+            try {
+                for (let id of ids) {
+                    await apiDelete('fitrah', id);
+                }
+                await loadData();
+                alert('Data terpilih berhasil dihapus.');
+            } catch (error) {
+                // Jika gagal, batalkan undo stack
+                undoStack.pop();
+                updateUndoRedoButtons();
+                alert('Gagal menghapus beberapa data.');
+            }
+        }
+
+        // ====================== LOAD SETTINGS (dari cache) ======================
+        async function loadSettings() {
+            const cachedSettings = getCachedData('settings');
+            if (cachedSettings) {
+                hargaPerKg = cachedSettings.harga_beras_per_kg || 18000;
+                berasPerJiwa = cachedSettings.beras_per_jiwa || 2.5;
+            }
+            try {
+                const settings = await apiGet('settings');
+                if (settings) {
+                    hargaPerKg = settings.harga_beras_per_kg || 18000;
+                    berasPerJiwa = settings.beras_per_jiwa || 2.5;
+                    setCachedData('settings', settings);
+                }
+            } catch (error) {
+                console.warn('Gagal memuat settings, menggunakan default', error);
+            }
+        }
+
+        // ====================== LOAD MUSTAHIK (dari cache) ======================
+        async function loadMustahik() {
+            const cached = getCachedData('mustahik');
+            if (cached) {
+                mustahikList = cached;
+                mustahikMap = {};
+                mustahikList.forEach(m => { mustahikMap[m.id] = m.nama; });
+                populateMustahikDropdowns();
+            }
+            try {
+                mustahikList = await apiGet('mustahik');
+                mustahikMap = {};
+                mustahikList.forEach(m => { mustahikMap[m.id] = m.nama; });
+                setCachedData('mustahik', mustahikList);
+                populateMustahikDropdowns();
+            } catch (error) {
+                console.warn('Gagal memuat mustahik', error);
+            }
+        }
+
+        function populateMustahikDropdowns() {
+            const selectors = ['#id_mustahik', '#salurkanMustahik'];
+            selectors.forEach(sel => {
+                const select = document.querySelector(sel);
+                if (!select) return;
+                select.innerHTML = '<option value="">-- Pilih Penerima --</option>';
+                mustahikList.forEach(m => {
+                    const option = document.createElement('option');
+                    option.value = m.id;
+                    option.textContent = `${m.nama} (${m.rt || '-'})`;
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        // ====================== LOAD DATA FITRAH ======================
+        async function loadData() {
+            // Tampilkan dari cache dulu
+            const cached = getCachedData('fitrah');
+            if (cached) {
+                allData = cached;
+                filterData();
+            }
+
+            try {
+                allData = await apiGet('fitrah');
+                setCachedData('fitrah', allData);
+                filterData();
+            } catch (error) {
+                console.error('Gagal memuat data:', error);
+                if (!cached) {
+                    document.getElementById('tableBody').innerHTML = '<tr><td colspan="13" class="text-center text-danger">Gagal memuat data. Periksa koneksi.</td></tr>';
+                }
+            }
+        }
+
+        // ====================== FILTER ======================
+        function filterData() {
+            const filterStatus = document.getElementById('filterStatus').value;
+            const filterRT = document.getElementById('filterRT').value;
+            const searchText = document.getElementById('searchInput').value.toLowerCase().trim();
+
+            filteredData = allData.filter(item => {
+                if (filterStatus !== 'semua' && (item.status || 'belum disalurkan') !== filterStatus) return false;
+                if (filterRT && item.rt !== filterRT) return false;
+                if (searchText && !(item.nama && item.nama.toLowerCase().includes(searchText))) return false;
+                return true;
+            });
+            renderTable(filteredData);
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            filterData();
+        }
+
+        // ====================== RENDER TABLE ======================
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            if (!data.length) {
+                tbody.innerHTML = `<tr><td colspan="13" class="text-center text-muted">Tidak ada data.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = data.map((item, index) => {
+                const status = item.status || 'belum disalurkan';
+                const badgeClass = status === 'sudah disalurkan' ? 'bg-success' : 'bg-warning text-dark';
+                const tglSalur = item.tanggalSalur ? new Date(item.tanggalSalur).toLocaleDateString('id-ID') : '-';
+                const tglInput = item.tanggal ? new Date(item.tanggal).toLocaleDateString('id-ID') : '-';
+                const uang = Number(item.uang || 0).toLocaleString('id-ID');
+                // Tampilkan penerima: jika id_mustahik ada, ambil dari map, jika tidak, tampilkan penerima_manual
+                const mustahikNama = item.id_mustahik ? (mustahikMap[item.id_mustahik] || '-') : (item.penerima_manual || '-');
+                return `
+                <tr>
+                    <td><input type="checkbox" class="rowCheckbox" value="${item.id}" onchange="updateDeleteSelectedButton()"></td>
+                    <td class="text-center">${index+1}</td>
+                    <td>${item.nama || '-'}</td>
+                    <td class="text-center">${item.jiwa || 0}</td>
+                    <td class="text-center">${item.beras || 0}</td>
+                    <td class="text-end">Rp ${uang}</td>
+                    <td class="text-center">${item.rt || '-'}</td>
+                    <td class="text-center">${tglInput}</td>
+                    <td class="text-center"><span class="badge ${badgeClass}">${status}</span></td>
+                    <td class="text-center">${tglSalur}</td>
+                    <td class="mustahik-name" title="${mustahikNama}">${mustahikNama}</td>
+                    <td>${item.inputBy || '-'}</td>
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm" role="group">
+                            ${status === 'belum disalurkan' 
+                                ? `<button class="btn btn-outline-success" onclick="bukaModalSalurkan('${item.id}')" title="Tandai sudah disalurkan"><i class="bi bi-check-circle"></i></button>` 
+                                : `<button class="btn btn-outline-warning" onclick="batalkanPenyaluran('${item.id}')" title="Batalkan penyaluran"><i class="bi bi-arrow-counterclockwise"></i></button>`
+                            }
+                            <button class="btn btn-outline-primary" onclick="editData('${item.id}')" title="Edit"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-outline-danger" onclick="hapusData('${item.id}')" title="Hapus"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `}).join('');
+        }
+
+        // ====================== UPDATE STATUS ======================
+        async function bukaModalSalurkan(id) {
+            currentSalurkanId = id;
+            document.getElementById('salurkanMustahik').value = '';
+            document.getElementById('salurkanManual').value = '';
+            salurkanModalInstance.show();
+        }
+
+        async function konfirmasiSalurkan() {
+            const idMustahik = document.getElementById('salurkanMustahik').value;
+            const penerimaManual = document.getElementById('salurkanManual').value;
+            if (!idMustahik && !penerimaManual) {
+                alert('Pilih penerima dari daftar atau isi manual.');
+                return;
+            }
+            try {
+                const tanggalSalur = new Date().toISOString().split('T')[0];
+                await apiUpdate('fitrah', currentSalurkanId, { 
+                    status: 'sudah disalurkan', 
+                    tanggalSalur,
+                    id_mustahik: idMustahik || '',
+                    penerima_manual: penerimaManual || ''
+                });
+                salurkanModalInstance.hide();
+                await loadData(); // akan memperbarui cache
+                alert('Data berhasil ditandai sebagai sudah disalurkan.');
+            } catch (error) {
+                alert('Gagal mengubah status: ' + error);
+            }
+        }
+
+        async function batalkanPenyaluran(id) {
+            if (!confirm('Batalkan penyaluran data ini (kembalikan ke status belum)?')) return;
+            try {
+                await apiUpdate('fitrah', id, { 
+                    status: 'belum disalurkan', 
+                    tanggalSalur: '',
+                    id_mustahik: '',
+                    penerima_manual: ''
+                });
+                await loadData();
+                alert('Status berhasil dibatalkan.');
+            } catch (error) {
+                alert('Gagal mengubah status.');
+            }
+        }
+
+        // ====================== HITUNG OTOMATIS ======================
+        function hitungDariJiwa() {
+            const jiwa = parseFloat(document.getElementById('jiwa').value) || 0;
+            const beras = jiwa * berasPerJiwa;
+            const uang = beras * hargaPerKg;
+            document.getElementById('beras').value = beras.toFixed(1);
+            document.getElementById('uang').value = Math.round(uang);
+        }
+
+        // ====================== MODAL TAMBAH ======================
+        function tambahData() {
+            document.getElementById('formModalLabel').innerText = 'Tambah Zakat Fitrah';
+            document.getElementById('editId').value = '';
+            document.getElementById('zakatForm').reset();
+            document.getElementById('jiwa').value = 1;
+            document.getElementById('rt').value = '';
+            document.getElementById('id_mustahik').value = '';
+            document.getElementById('penerima_manual').value = '';
+            document.getElementById('jiwa').removeEventListener('input', hitungDariJiwa);
+            document.getElementById('jiwa').addEventListener('input', hitungDariJiwa);
+            hitungDariJiwa();
+            modalInstance.show();
+        }
+
+        // ====================== MODAL EDIT ======================
+        function editData(id) {
+            const item = allData.find(d => d.id == id);
+            if (!item) return;
+            document.getElementById('formModalLabel').innerText = 'Edit Zakat Fitrah';
+            document.getElementById('editId').value = item.id;
+            document.getElementById('nama').value = item.nama || '';
+            document.getElementById('jiwa').value = item.jiwa || 1;
+            document.getElementById('beras').value = item.beras || 0;
+            document.getElementById('uang').value = item.uang || 0;
+            document.getElementById('rt').value = item.rt || '';
+            document.getElementById('id_mustahik').value = item.id_mustahik || '';
+            document.getElementById('penerima_manual').value = item.penerima_manual || '';
+            document.getElementById('jiwa').removeEventListener('input', hitungDariJiwa);
+            document.getElementById('jiwa').addEventListener('input', hitungDariJiwa);
+            modalInstance.show();
+        }
+
+        // ====================== SUBMIT FORM ======================
+        document.getElementById('zakatForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('editId').value;
+            const nama = document.getElementById('nama').value;
+            const jiwa = document.getElementById('jiwa').value;
+            const beras = document.getElementById('beras').value || 0;
+            const uang = document.getElementById('uang').value || 0;
+            const rt = document.getElementById('rt').value;
+            const id_mustahik = document.getElementById('id_mustahik').value;
+            const penerima_manual = document.getElementById('penerima_manual').value;
+            if (!nama || !rt) { alert('Nama dan RT harus diisi'); return; }
+            const data = { 
+                nama, 
+                jiwa: parseInt(jiwa), 
+                beras: parseFloat(beras), 
+                uang: parseInt(uang), 
+                rt,
+                id_mustahik: id_mustahik || '',
+                penerima_manual: penerima_manual || ''
+            };
+            try {
+                if (id) {
+                    const itemLama = allData.find(d => d.id == id);
+                    data.status = itemLama.status || 'belum disalurkan';
+                    data.tanggalSalur = itemLama.tanggalSalur || '';
+                    data.tanggal = itemLama.tanggal;
+                    data.inputBy = itemLama.inputBy;
+                    await apiEdit('fitrah', id, data);
+                } else {
+                    data.id = Date.now().toString();
+                    data.tanggal = new Date().toISOString().split('T')[0];
+                    data.status = 'belum disalurkan';
+                    data.tanggalSalur = '';
+                    data.inputBy = user.email;
+                    await apiPost('fitrah', data);
+                }
+                modalInstance.hide();
+                await loadData(); // akan memperbarui cache
+                alert('Data berhasil disimpan.');
+            } catch (error) { alert('Gagal menyimpan: ' + error); }
+        });
+
+        // ====================== HAPUS DATA ======================
+        async function hapusData(id) {
+            const item = allData.find(d => d.id == id);
+            if (!item) return;
+            if (!confirm('Yakin ingin menghapus data ini?')) return;
+
+            pushToUndo('delete', [item]);
+
+            try {
+                await apiDelete('fitrah', id);
+                await loadData();
+                alert('Data berhasil dihapus.');
+            } catch (error) {
+                undoStack.pop();
+                updateUndoRedoButtons();
+                alert('Gagal menghapus data.');
+            }
+        }
+
+        // ====================== EKSPOR CSV ======================
+        function exportCSV() {
+            if (filteredData.length === 0) {
+                alert('Tidak ada data untuk diekspor.');
+                return;
+            }
+            const headers = ['No','Nama','Jml Jiwa','Beras (kg)','Uang (Rp)','RT','Tgl Input','Status','Tgl Salur','Penerima','Input By'];
+            const rows = filteredData.map((item, idx) => [
+                idx+1,
+                item.nama || '',
+                item.jiwa || 0,
+                item.beras || 0,
+                item.uang || 0,
+                item.rt || '',
+                item.tanggal || '',
+                item.status || 'belum disalurkan',
+                item.tanggalSalur || '',
+                item.id_mustahik ? (mustahikMap[item.id_mustahik] || '') : (item.penerima_manual || ''),
+                item.inputBy || ''
+            ]);
+            const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.setAttribute('download', 'zakat_fitrah.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // ====================== IMPOR CSV ======================
+        async function importCSV(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const csv = e.target.result;
+                const lines = csv.split('\n').filter(line => line.trim() !== '');
+                if (lines.length < 2) {
+                    alert('File CSV tidak valid atau kosong.');
+                    return;
+                }
+                const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/\s+/g, '_'));
+                const dataRows = lines.slice(1).map(line => {
+                    const values = line.split(',');
+                    let obj = {};
+                    headers.forEach((h, idx) => {
+                        let key = h;
+                        if (key.includes('nama')) key = 'nama';
+                        else if (key.includes('jiwa')) key = 'jiwa';
+                        else if (key.includes('beras')) key = 'beras';
+                        else if (key.includes('uang')) key = 'uang';
+                        else if (key.includes('rt')) key = 'rt';
+                        else if (key.includes('tgl_input') || key.includes('tanggal_input')) key = 'tanggal';
+                        else if (key.includes('status')) key = 'status';
+                        else if (key.includes('tgl_salur') || key.includes('tanggal_salur')) key = 'tanggalSalur';
+                        else if (key.includes('penerima') && !key.includes('id')) key = 'penerima_manual';
+                        else if (key.includes('id_mustahik') || key.includes('penerima_id')) key = 'id_mustahik';
+                        else if (key.includes('input_by') || key.includes('inputby')) key = 'inputBy';
+                        obj[key] = values[idx] ? values[idx].trim() : '';
+                    });
+                    return obj;
+                });
+
+                const validRows = dataRows.filter(row => row.nama && row.nama !== '');
+                if (validRows.length === 0) {
+                    alert('Tidak ada data valid untuk diimpor (minimal ada nama).');
+                    return;
+                }
+
+                if (!confirm(`Akan mengimpor ${validRows.length} data. Lanjutkan?`)) return;
+
+                const today = new Date().toISOString().split('T')[0];
+                const rowsToImport = validRows.map(row => ({
+                    id: row.id || Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                    nama: row.nama,
+                    jiwa: parseInt(row.jiwa) || 1,
+                    beras: parseFloat(row.beras) || 0,
+                    uang: parseInt(row.uang) || 0,
+                    rt: row.rt ? row.rt.toString().padStart(2, '0') : '01',
+                    tanggal: row.tanggal || today,
+                    status: row.status || 'belum disalurkan',
+                    tanggalSalur: row.tanggalSalur || '',
+                    id_mustahik: row.id_mustahik || '',
+                    penerima_manual: row.penerima_manual || '',
+                    inputBy: row.inputBy || user.email
+                }));
+
+                try {
+                    const result = await apiImport('fitrah', rowsToImport);
+                    if (result.success) {
+                        alert('Data berhasil diimpor.');
+                        await loadData();
+                    } else {
+                        alert('Gagal mengimpor: ' + result.error);
+                    }
+                } catch (error) {
+                    alert('Gagal mengimpor: ' + error);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        async function apiImport(endpoint, rows) {
+            const payload = { action: 'import', endpoint, data: { rows } };
+            return fetch(CONFIG.API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(payload),
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(() => ({ success: true }))
+            .catch(err => ({ success: false, error: err.message }));
+        }
+
+        // ====================== INIT ======================
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Load settings dan mustahik di background
+            loadSettings();
+            await loadMustahik(); // kita tunggu sebentar agar dropdown terisi
+            modalInstance = new bootstrap.Modal(document.getElementById('formModal'));
+            salurkanModalInstance = new bootstrap.Modal(document.getElementById('salurkanModal'));
+            loadData(); // load data fitrah
+
+            // Inisialisasi tombol undo/redo
+            updateUndoRedoButtons();
+        });
+    </script>
+</body>
+</html>

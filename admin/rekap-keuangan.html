@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Rekap Zakat (Beras & Uang)</title>
+    <!-- Bootstrap 5 + Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .stat-card {
+            border-radius: 15px;
+            transition: transform 0.3s;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,100,0,0.2);
+        }
+        .card-income {
+            background: linear-gradient(145deg, #e8f5e9, #c8e6c9);
+        }
+        .card-expense {
+            background: linear-gradient(145deg, #ffebee, #ffcdd2);
+        }
+        .card-balance {
+            background: linear-gradient(145deg, #e3f2fd, #bbdefb);
+        }
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #2e7d32;
+        }
+        .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1b5e20;
+        }
+        .table-summary {
+            font-size: 0.95rem;
+        }
+        .kg-badge {
+            background-color: #28a745;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        /* Loading Overlay */
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="spinner-border text-light" style="width:3rem; height:3rem;" role="status"></div>
+        <div id="loading-progress" class="mt-3 h4">0%</div>
+        <div id="loading-message" class="mt-2">Memuat data...</div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-success fixed-top shadow">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="bi bi-building"></i> Admin Masjid Al-Ikhlas</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Sidebar Offcanvas -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Menu Admin</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link" href="dashboard.html"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="fitrah.html"><i class="bi bi-archive"></i> Zakat Fitrah</a></li>
+                <li class="nav-item"><a class="nav-link" href="mal.html"><i class="bi bi-cash-stack"></i> Zakat Mal</a></li>
+                <li class="nav-item"><a class="nav-link" href="fidyah.html"><i class="bi bi-heart"></i> Zakat Fidyah</a></li>
+                <li class="nav-item"><a class="nav-link" href="pezakat.html"><i class="bi bi-people"></i> Data Pezakat</a></li>
+                <li class="nav-item"><a class="nav-link" href="mustahik.html"><i class="bi bi-hand-index-thumb"></i> Data Mustahik</a></li>
+                <li class="nav-item"><a class="nav-link" href="lokasi.html"><i class="bi bi-geo-alt"></i> Lokasi Izin</a></li>
+                <li class="nav-item"><a class="nav-link" href="sesi.html"><i class="bi bi-calendar-check"></i> Sesi Absensi</a></li>
+                <li class="nav-item"><a class="nav-link" href="laporan.html"><i class="bi bi-file-text"></i> Laporan</a></li>
+                <li class="nav-item"><a class="nav-link active" href="rekap-keuangan.html"><i class="bi bi-pie-chart"></i> Rekap Zakat</a></li>
+                <li class="nav-item"><a class="nav-link" href="settings.html"><i class="bi bi-gear"></i> Pengaturan</a></li>
+                <li class="nav-item"><a class="nav-link text-danger" href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mt-5 pt-5">
+        <h2 class="text-success mb-4"><i class="bi bi-pie-chart"></i> Rekap Zakat (Beras & Uang)</h2>
+
+        <!-- Ringkasan Beras (Fitrah + Fidyah) -->
+        <h4 class="mt-4"><i class="bi bi-basket"></i> Zakat Beras (Fitrah & Fidyah)</h4>
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="card stat-card card-income">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Pemasukan Beras</h5>
+                        <div class="card-value" id="totalBerasMasuk">0 kg</div>
+                        <small class="text-muted">Fitrah + Fidyah</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card card-expense">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Pengeluaran Beras</h5>
+                        <div class="card-value" id="totalBerasKeluar">0 kg</div>
+                        <small class="text-muted">Sudah disalurkan</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card card-balance">
+                    <div class="card-body">
+                        <h5 class="card-title">Sisa Beras</h5>
+                        <div class="card-value" id="sisaBeras">0 kg</div>
+                        <small class="text-muted">Belum disalurkan</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ringkasan Uang (Mal) -->
+        <h4 class="mt-4"><i class="bi bi-cash-stack"></i> Zakat Mal (Uang)</h4>
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="card stat-card card-income">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Pemasukan Uang</h5>
+                        <div class="card-value" id="totalUangMasuk">Rp 0</div>
+                        <small class="text-muted">Zakat Mal</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card card-expense">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Pengeluaran Uang</h5>
+                        <div class="card-value" id="totalUangKeluar">Rp 0</div>
+                        <small class="text-muted">Sudah disalurkan</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card card-balance">
+                    <div class="card-body">
+                        <h5 class="card-title">Sisa Uang</h5>
+                        <div class="card-value" id="sisaUang">Rp 0</div>
+                        <small class="text-muted">Belum disalurkan</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Keseluruhan (dikonversi ke uang) -->
+        <h4 class="mt-4"><i class="bi bi-calculator"></i> Total Keseluruhan (Beras dikonversi ke Uang)</h4>
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="card stat-card card-income">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Pemasukan</h5>
+                        <div class="card-value" id="totalPemasukan">Rp 0</div>
+                        <small class="text-muted">Beras + Uang</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card card-expense">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Pengeluaran</h5>
+                        <div class="card-value" id="totalPengeluaran">Rp 0</div>
+                        <small class="text-muted">Sudah disalurkan</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card card-balance">
+                    <div class="card-body">
+                        <h5 class="card-title">Sisa Dana</h5>
+                        <div class="card-value" id="sisaDana">Rp 0</div>
+                        <small class="text-muted">Belum disalurkan</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabel Detail per Jenis Zakat -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-success text-white">
+                <i class="bi bi-table"></i> Rincian per Jenis Zakat
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-hover table-summary">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Jenis Zakat</th>
+                            <th class="text-end">Pemasukan (Beras kg)</th>
+                            <th class="text-end">Pengeluaran (Beras kg)</th>
+                            <th class="text-end">Sisa Beras (kg)</th>
+                            <th class="text-end">Pemasukan (Rp)</th>
+                            <th class="text-end">Pengeluaran (Rp)</th>
+                            <th class="text-end">Sisa (Rp)</th>
+                            <th class="text-center">Muzaki</th>
+                            <th class="text-center">Penerima</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Zakat Fitrah</strong></td>
+                            <td class="text-end" id="fitrahBerasMasuk">0</td>
+                            <td class="text-end" id="fitrahBerasKeluar">0</td>
+                            <td class="text-end" id="fitrahBerasSisa">0</td>
+                            <td class="text-end" id="fitrahUangMasuk">0</td>
+                            <td class="text-end" id="fitrahUangKeluar">0</td>
+                            <td class="text-end" id="fitrahUangSisa">0</td>
+                            <td class="text-center" id="fitrahMuzaki">0</td>
+                            <td class="text-center" id="fitrahPenerima">0</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Zakat Mal</strong></td>
+                            <td class="text-end">-</td>
+                            <td class="text-end">-</td>
+                            <td class="text-end">-</td>
+                            <td class="text-end" id="malUangMasuk">0</td>
+                            <td class="text-end" id="malUangKeluar">0</td>
+                            <td class="text-end" id="malUangSisa">0</td>
+                            <td class="text-center" id="malMuzaki">0</td>
+                            <td class="text-center" id="malPenerima">0</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Zakat Fidyah</strong></td>
+                            <td class="text-end" id="fidyahBerasMasuk">0</td>
+                            <td class="text-end" id="fidyahBerasKeluar">0</td>
+                            <td class="text-end" id="fidyahBerasSisa">0</td>
+                            <td class="text-end" id="fidyahUangMasuk">0</td>
+                            <td class="text-end" id="fidyahUangKeluar">0</td>
+                            <td class="text-end" id="fidyahUangSisa">0</td>
+                            <td class="text-center" id="fidyahMuzaki">0</td>
+                            <td class="text-center" id="fidyahPenerima">0</td>
+                        </tr>
+                        <tr class="table-success fw-bold">
+                            <td>TOTAL</td>
+                            <td class="text-end" id="totalBerasMasukDetail">0</td>
+                            <td class="text-end" id="totalBerasKeluarDetail">0</td>
+                            <td class="text-end" id="totalBerasSisaDetail">0</td>
+                            <td class="text-end" id="totalUangMasukDetail">0</td>
+                            <td class="text-end" id="totalUangKeluarDetail">0</td>
+                            <td class="text-end" id="totalUangSisaDetail">0</td>
+                            <td class="text-center" id="totalMuzaki">0</td>
+                            <td class="text-center" id="totalPenerima">0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Grafik Perbandingan -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-header bg-success text-white">
+                        <i class="bi bi-bar-chart"></i> Pemasukan Beras (kg) per Jenis
+                    </div>
+                    <div class="card-body">
+                        <canvas id="chartBeras" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-header bg-success text-white">
+                        <i class="bi bi-bar-chart"></i> Pemasukan Uang (Rp) per Jenis
+                    </div>
+                    <div class="card-body">
+                        <canvas id="chartUang" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/loader.js"></script>
+    <script>
+        // ====================== CEK LOGIN ======================
+        let user = JSON.parse(localStorage.getItem('user'));
+        if (!user || user.role !== 'admin') {
+            window.location.href = '../login.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = '../login.html';
+        }
+
+        // ====================== GLOBAL ======================
+        let fitrahData = [], malData = [], fidyahData = [];
+        let hargaBeras = 18000; // default
+        let chartBeras, chartUang; // variabel untuk menyimpan instance chart
+
+        // ====================== HITUNG SEMUA ======================
+        function hitungSemua() {
+            let fitrahBerasMasuk = 0, fitrahBerasKeluar = 0;
+            let fitrahUangMasuk = 0, fitrahUangKeluar = 0;
+            let fitrahMuzaki = 0, fitrahPenerima = 0;
+            
+            let malUangMasuk = 0, malUangKeluar = 0, malMuzaki = 0, malPenerima = 0;
+            
+            let fidyahBerasMasuk = 0, fidyahBerasKeluar = 0;
+            let fidyahUangMasuk = 0, fidyahUangKeluar = 0;
+            let fidyahMuzaki = 0, fidyahPenerima = 0;
+
+            // Fitrah
+            fitrahData.forEach(item => {
+                const beras = Number(item.beras) || 0;
+                const uang = Number(item.uang) || 0;
+                fitrahBerasMasuk += beras;
+                fitrahUangMasuk += uang;
+                fitrahMuzaki++;
+                if (item.status === 'sudah disalurkan') {
+                    fitrahBerasKeluar += beras;
+                    fitrahUangKeluar += uang;
+                    fitrahPenerima++;
+                }
+            });
+
+            // Mal
+            malData.forEach(item => {
+                const nominal = Number(item.nominal) || 0;
+                malUangMasuk += nominal;
+                malMuzaki++;
+                if (item.status === 'sudah disalurkan') {
+                    malUangKeluar += nominal;
+                    malPenerima++;
+                }
+            });
+
+            // Fidyah
+            fidyahData.forEach(item => {
+                const beras = Number(item.beras) || 0;
+                const uang = Number(item.uang) || 0;
+                fidyahBerasMasuk += beras;
+                fidyahUangMasuk += uang;
+                fidyahMuzaki++;
+                if (item.status === 'sudah disalurkan') {
+                    fidyahBerasKeluar += beras;
+                    fidyahUangKeluar += uang;
+                    fidyahPenerima++;
+                }
+            });
+
+            // Total beras
+            const totalBerasMasuk = fitrahBerasMasuk + fidyahBerasMasuk;
+            const totalBerasKeluar = fitrahBerasKeluar + fidyahBerasKeluar;
+            const sisaBeras = totalBerasMasuk - totalBerasKeluar;
+
+            // Total uang
+            const totalUangMasuk = fitrahUangMasuk + malUangMasuk + fidyahUangMasuk;
+            const totalUangKeluar = fitrahUangKeluar + malUangKeluar + fidyahUangKeluar;
+            const sisaUang = totalUangMasuk - totalUangKeluar;
+
+            // Total keseluruhan dalam uang (beras dikonversi)
+            const totalPemasukan = totalUangMasuk + (totalBerasMasuk * hargaBeras);
+            const totalPengeluaran = totalUangKeluar + (totalBerasKeluar * hargaBeras);
+            const sisaDana = totalPemasukan - totalPengeluaran;
+
+            // Update UI Beras
+            document.getElementById('totalBerasMasuk').innerText = totalBerasMasuk.toFixed(1) + ' kg';
+            document.getElementById('totalBerasKeluar').innerText = totalBerasKeluar.toFixed(1) + ' kg';
+            document.getElementById('sisaBeras').innerText = sisaBeras.toFixed(1) + ' kg';
+
+            // Update UI Uang
+            document.getElementById('totalUangMasuk').innerText = 'Rp ' + totalUangMasuk.toLocaleString('id-ID');
+            document.getElementById('totalUangKeluar').innerText = 'Rp ' + totalUangKeluar.toLocaleString('id-ID');
+            document.getElementById('sisaUang').innerText = 'Rp ' + sisaUang.toLocaleString('id-ID');
+
+            // Update UI Total
+            document.getElementById('totalPemasukan').innerText = 'Rp ' + totalPemasukan.toLocaleString('id-ID');
+            document.getElementById('totalPengeluaran').innerText = 'Rp ' + totalPengeluaran.toLocaleString('id-ID');
+            document.getElementById('sisaDana').innerText = 'Rp ' + sisaDana.toLocaleString('id-ID');
+
+            // Tabel detail
+            document.getElementById('fitrahBerasMasuk').innerText = fitrahBerasMasuk.toFixed(1);
+            document.getElementById('fitrahBerasKeluar').innerText = fitrahBerasKeluar.toFixed(1);
+            document.getElementById('fitrahBerasSisa').innerText = (fitrahBerasMasuk - fitrahBerasKeluar).toFixed(1);
+            document.getElementById('fitrahUangMasuk').innerText = 'Rp ' + fitrahUangMasuk.toLocaleString('id-ID');
+            document.getElementById('fitrahUangKeluar').innerText = 'Rp ' + fitrahUangKeluar.toLocaleString('id-ID');
+            document.getElementById('fitrahUangSisa').innerText = 'Rp ' + (fitrahUangMasuk - fitrahUangKeluar).toLocaleString('id-ID');
+            document.getElementById('fitrahMuzaki').innerText = fitrahMuzaki;
+            document.getElementById('fitrahPenerima').innerText = fitrahPenerima;
+
+            document.getElementById('malUangMasuk').innerText = 'Rp ' + malUangMasuk.toLocaleString('id-ID');
+            document.getElementById('malUangKeluar').innerText = 'Rp ' + malUangKeluar.toLocaleString('id-ID');
+            document.getElementById('malUangSisa').innerText = 'Rp ' + (malUangMasuk - malUangKeluar).toLocaleString('id-ID');
+            document.getElementById('malMuzaki').innerText = malMuzaki;
+            document.getElementById('malPenerima').innerText = malPenerima;
+
+            document.getElementById('fidyahBerasMasuk').innerText = fidyahBerasMasuk.toFixed(1);
+            document.getElementById('fidyahBerasKeluar').innerText = fidyahBerasKeluar.toFixed(1);
+            document.getElementById('fidyahBerasSisa').innerText = (fidyahBerasMasuk - fidyahBerasKeluar).toFixed(1);
+            document.getElementById('fidyahUangMasuk').innerText = 'Rp ' + fidyahUangMasuk.toLocaleString('id-ID');
+            document.getElementById('fidyahUangKeluar').innerText = 'Rp ' + fidyahUangKeluar.toLocaleString('id-ID');
+            document.getElementById('fidyahUangSisa').innerText = 'Rp ' + (fidyahUangMasuk - fidyahUangKeluar).toLocaleString('id-ID');
+            document.getElementById('fidyahMuzaki').innerText = fidyahMuzaki;
+            document.getElementById('fidyahPenerima').innerText = fidyahPenerima;
+
+            document.getElementById('totalBerasMasukDetail').innerText = totalBerasMasuk.toFixed(1);
+            document.getElementById('totalBerasKeluarDetail').innerText = totalBerasKeluar.toFixed(1);
+            document.getElementById('totalBerasSisaDetail').innerText = sisaBeras.toFixed(1);
+            document.getElementById('totalUangMasukDetail').innerText = 'Rp ' + totalUangMasuk.toLocaleString('id-ID');
+            document.getElementById('totalUangKeluarDetail').innerText = 'Rp ' + totalUangKeluar.toLocaleString('id-ID');
+            document.getElementById('totalUangSisaDetail').innerText = 'Rp ' + sisaUang.toLocaleString('id-ID');
+            document.getElementById('totalMuzaki').innerText = fitrahMuzaki + malMuzaki + fidyahMuzaki;
+            document.getElementById('totalPenerima').innerText = fitrahPenerima + malPenerima + fidyahPenerima;
+
+            // Grafik
+            updateCharts(fitrahBerasMasuk, fidyahBerasMasuk, fitrahUangMasuk, malUangMasuk, fidyahUangMasuk);
+        }
+
+        function updateCharts(berasFitrah, berasFidyah, uangFitrah, uangMal, uangFidyah) {
+            // Grafik beras
+            const ctx1 = document.getElementById('chartBeras').getContext('2d');
+            if (chartBeras) chartBeras.destroy();
+            chartBeras = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['Fitrah', 'Fidyah'],
+                    datasets: [{
+                        label: 'Pemasukan Beras (kg)',
+                        data: [berasFitrah, berasFidyah],
+                        backgroundColor: ['#28a745', '#17a2b8'],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Grafik uang
+            const ctx2 = document.getElementById('chartUang').getContext('2d');
+            if (chartUang) chartUang.destroy();
+            chartUang = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['Fitrah', 'Mal', 'Fidyah'],
+                    datasets: [{
+                        label: 'Pemasukan Uang (Rp)',
+                        data: [uangFitrah, uangMal, uangFidyah],
+                        backgroundColor: ['#28a745', '#ffc107', '#17a2b8'],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            ticks: { callback: value => 'Rp ' + value.toLocaleString('id-ID') }
+                        }
+                    },
+                    plugins: {
+                        tooltip: { 
+                            callbacks: { 
+                                label: ctx => ctx.dataset.label + ': Rp ' + ctx.raw.toLocaleString('id-ID')
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ====================== LOAD DATA DARI CACHE ======================
+        async function loadData() {
+            const overlay = document.getElementById('loading-overlay');
+            if (!LOADER.isAllDataLoaded()) {
+                overlay.style.display = 'flex';
+                try {
+                    await LOADER.loadAllData(false, (progress, message) => {
+                        document.getElementById('loading-progress').innerText = progress + '%';
+                        document.getElementById('loading-message').innerText = message;
+                    });
+                } catch (e) {
+                    console.error('Gagal memuat data:', e);
+                } finally {
+                    overlay.style.display = 'none';
+                }
+            }
+
+            // Ambil data dari cache
+            fitrahData = LOADER.getData('fitrah');
+            malData = LOADER.getData('mal');
+            fidyahData = LOADER.getData('fidyah');
+            const settings = LOADER.getData('settings');
+            if (settings && settings.harga_beras_per_kg) {
+                hargaBeras = settings.harga_beras_per_kg;
+            }
+
+            hitungSemua();
+        }
+
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
