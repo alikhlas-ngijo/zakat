@@ -1,0 +1,26 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    padding-top: 70px;
+}
+.hero h1 {
+    text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+}
+.card {
+    transition: transform 0.3s;
+}
+.card:hover {
+    transform: translateY(-10px);
+}
+.btn-warning {
+    background-color: #ffc107;
+    border: none;
+}
+.btn-warning:hover {
+    background-color: #e0a800;
+}
+.text-success {
+    color: #2e7d32 !important;
+}
+.bg-success {
+    background-color: #2e7d32 !important;
+}
