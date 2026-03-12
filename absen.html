@@ -13,7 +13,6 @@
     <script src="/zakat/js/config.js"></script>
     <script src="/zakat/js/api.js"></script>
     <style>
-        /* ========== Style Modern ========== */
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(145deg, #f0f4f8 0%, #d9e2ec 100%);
@@ -25,7 +24,7 @@
             margin: 0;
         }
         .card-absen {
-            max-width: 520px;
+            max-width: 560px;
             width: 100%;
             border-radius: 28px;
             background: rgba(255,255,255,0.95);
@@ -38,7 +37,7 @@
             color: white;
             text-align: center;
             border-radius: 28px 28px 0 0 !important;
-            padding: 24px 20px;
+            padding: 20px 20px;
             border-bottom: none;
         }
         .card-header h3 {
@@ -47,7 +46,24 @@
             letter-spacing: -0.5px;
         }
         .card-body {
-            padding: 30px;
+            padding: 24px;
+        }
+        .nav-tabs {
+            border-bottom: 2px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+        .nav-tabs .nav-link {
+            border: none;
+            font-weight: 600;
+            color: #495057;
+            padding: 10px 16px;
+            border-radius: 40px;
+            margin-right: 8px;
+            transition: all 0.2s;
+        }
+        .nav-tabs .nav-link.active {
+            background-color: #28a745;
+            color: white;
         }
         .form-label {
             font-weight: 500;
@@ -120,12 +136,8 @@
         .alert {
             border-radius: 16px;
         }
-        .mode-badge {
+        .text-small {
             font-size: 0.85rem;
-            background: #e9ecef;
-            padding: 4px 10px;
-            border-radius: 40px;
-            color: #495057;
         }
     </style>
 </head>
@@ -136,38 +148,56 @@
             <p class="mb-0 opacity-75">Form Absensi Petugas</p>
         </div>
         <div class="card-body">
-            <div id="alertMessage" class="alert d-none"></div>
-            
-            <!-- Indikator mode (QR/Manual) -->
-            <div class="d-flex justify-content-end mb-2">
-                <span id="modeBadge" class="mode-badge"><i class="bi bi-qr-code-scan me-1"></i>Mode QR</span>
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs" id="absenTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="qr-tab" data-bs-toggle="tab" data-bs-target="#qr" type="button" role="tab" aria-controls="qr" aria-selected="true"><i class="bi bi-qr-code-scan me-1"></i> Scan QR</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="manual-tab" data-bs-toggle="tab" data-bs-target="#manual" type="button" role="tab" aria-controls="manual" aria-selected="false"><i class="bi bi-pencil-square me-1"></i> Manual</button>
+                </li>
+            </ul>
+
+            <!-- Tab panes -->
+            <div class="tab-content" id="absenTabContent">
+                <!-- Panel QR -->
+                <div class="tab-pane fade show active" id="qr" role="tabpanel" aria-labelledby="qr-tab">
+                    <div id="qrInfoSesi" class="info-sesi d-none mb-4">
+                        <i class="bi bi-info-circle me-2"></i> <span id="qrInfoSesiText"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="qrNama" class="form-label"><i class="bi bi-person me-1"></i>Nama Petugas</label>
+                        <input type="text" class="form-control" id="qrNama" placeholder="Masukkan nama lengkap" autocomplete="off">
+                    </div>
+                    <div class="mb-3" id="qrPasswordGroup">
+                        <label for="qrPassword" class="form-label"><i class="bi bi-lock me-1"></i>Password Sesi</label>
+                        <input type="text" class="form-control" id="qrPassword" readonly>
+                        <div id="qrPasswordInfo" class="form-text mt-1"></div>
+                    </div>
+                    <!-- Tanda Tangan (sama untuk kedua tab, kita akan pakai canvas yang sama) -->
+                </div>
+
+                <!-- Panel Manual -->
+                <div class="tab-pane fade" id="manual" role="tabpanel" aria-labelledby="manual-tab">
+                    <div class="mb-3">
+                        <label for="manualSesi" class="form-label"><i class="bi bi-calendar-event me-1"></i>Pilih Sesi Aktif</label>
+                        <select class="form-select" id="manualSesi" required>
+                            <option value="">-- Memuat sesi --</option>
+                        </select>
+                        <div class="form-text" id="manualSesiInfo"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="manualPassword" class="form-label"><i class="bi bi-lock me-1"></i>Password Sesi</label>
+                        <input type="text" class="form-control" id="manualPassword" placeholder="Masukkan password dari panitia" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="manualNama" class="form-label"><i class="bi bi-person me-1"></i>Nama Petugas</label>
+                        <input type="text" class="form-control" id="manualNama" placeholder="Masukkan nama lengkap" autocomplete="off">
+                    </div>
+                </div>
             </div>
 
-            <!-- Info sesi untuk mode QR -->
-            <div id="infoSesiQR" class="info-sesi d-none mb-4">
-                <i class="bi bi-info-circle me-2"></i> <span id="infoSesiText"></span>
-            </div>
-
-            <!-- Dropdown sesi untuk mode manual -->
-            <div id="manualSesiGroup" class="mb-4 d-none">
-                <label for="sesiSelect" class="form-label"><i class="bi bi-calendar-event me-1"></i>Pilih Sesi Aktif</label>
-                <select class="form-select" id="sesiSelect" required>
-                    <option value="">-- Memuat sesi --</option>
-                </select>
-                <div class="form-text" id="sesiInfo"></div>
-            </div>
-
-            <div class="mb-4">
-                <label for="nama" class="form-label"><i class="bi bi-person me-1"></i>Nama Petugas</label>
-                <input type="text" class="form-control" id="nama" placeholder="Masukkan nama lengkap" required autocomplete="off">
-            </div>
-
-            <div class="mb-4" id="passwordGroup">
-                <label for="password" class="form-label"><i class="bi bi-lock me-1"></i>Password Sesi</label>
-                <input type="text" class="form-control" id="password" placeholder="Masukkan password sesi" required>
-                <div id="passwordInfo" class="form-text mt-1"></div>
-            </div>
-
+            <!-- Tanda Tangan (digunakan bersama) -->
             <div class="mb-4">
                 <label class="form-label"><i class="bi bi-pencil me-1"></i>Tanda Tangan</label>
                 <div class="canvas-container">
@@ -179,6 +209,7 @@
                 <div class="form-text mt-2">Tanda tangani di atas area ini (bisa dengan jari)</div>
             </div>
 
+            <!-- Lokasi -->
             <div class="mb-4">
                 <label class="form-label"><i class="bi bi-geo-alt me-1"></i>Lokasi</label>
                 <div id="locationStatus" class="location-status text-muted d-flex align-items-center">
@@ -188,15 +219,19 @@
                 <input type="hidden" id="longitude" value="">
             </div>
 
+            <!-- Tombol Submit -->
             <button class="btn-absen" id="btnSubmit" onclick="submitAbsen()" disabled>
                 <span id="submitText">Absen Sekarang</span>
                 <span id="submitSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
             </button>
+
+            <!-- Alert -->
+            <div id="alertMessage" class="alert d-none mt-3"></div>
         </div>
     </div>
 
     <script>
-        // ====================== FUNGSI SHOWALERT ======================
+        // ====================== KONFIGURASI ======================
         function showAlert(message, type) {
             const alertDiv = document.getElementById('alertMessage');
             alertDiv.className = `alert alert-${type}`;
@@ -327,7 +362,13 @@
             }, 5000);
         }
 
-        // ====================== BACA PARAMETER URL ======================
+        document.addEventListener('DOMContentLoaded', () => {
+            getLocation();
+            initQRFromURL();
+            loadSesiAktif();
+        });
+
+        // ====================== BACA PARAMETER URL UNTUK QR ======================
         function getQueryParams() {
             const params = new URLSearchParams(window.location.search);
             return {
@@ -336,48 +377,29 @@
             };
         }
 
-        // ====================== MODE DETECTION ======================
-        const urlParams = getQueryParams();
-        const isQRMode = urlParams.sesi_id && urlParams.token;
-
-        // Elemen yang akan dimanipulasi
-        const modeBadge = document.getElementById('modeBadge');
-        const infoSesiQR = document.getElementById('infoSesiQR');
-        const manualSesiGroup = document.getElementById('manualSesiGroup');
-        const passwordInput = document.getElementById('password');
-        const passwordInfo = document.getElementById('passwordInfo');
-        const sesiSelect = document.getElementById('sesiSelect');
-        const sesiInfo = document.getElementById('sesiInfo');
-        const btnSubmit = document.getElementById('btnSubmit');
-
-        // Set mode tampilan
-        if (isQRMode) {
-            modeBadge.innerHTML = '<i class="bi bi-qr-code-scan me-1"></i>Mode QR (Sesi dari QR)';
-            infoSesiQR.classList.remove('d-none');
-            manualSesiGroup.classList.add('d-none');
-            passwordInput.value = urlParams.token;
-            passwordInput.readOnly = true;
-            passwordInfo.innerHTML = '<i class="bi bi-check-circle text-success"></i> Password terisi otomatis dari QR';
-            document.getElementById('infoSesiText').innerText = `Anda akan absen untuk sesi: ${urlParams.sesi_id}`;
-        } else {
-            modeBadge.innerHTML = '<i class="bi bi-pencil-square me-1"></i>Mode Manual (Pilih Sesi)';
-            infoSesiQR.classList.add('d-none');
-            manualSesiGroup.classList.remove('d-none');
-            passwordInput.readOnly = false;
-            passwordInput.value = '';
-            passwordInfo.innerHTML = '<i class="bi bi-info-circle"></i> Masukkan password yang diberikan panitia.';
-            // Load sesi aktif
-            loadSesiAktif();
+        function initQRFromURL() {
+            const urlParams = getQueryParams();
+            if (urlParams.sesi_id && urlParams.token) {
+                document.getElementById('qrPassword').value = urlParams.token;
+                document.getElementById('qrPasswordInfo').innerHTML = '<i class="bi bi-check-circle text-success"></i> Password terisi otomatis dari QR';
+                const infoSesi = document.getElementById('qrInfoSesi');
+                infoSesi.classList.remove('d-none');
+                document.getElementById('qrInfoSesiText').innerText = `Anda akan absen untuk sesi: ${urlParams.sesi_id}`;
+            } else {
+                // Tidak ada parameter QR, mungkin mode manual saja
+                document.getElementById('qrPasswordInfo').innerHTML = '<span class="text-warning">Tidak ada data QR. Gunakan mode manual.</span>';
+            }
         }
 
-        // Fungsi load sesi aktif untuk mode manual
+        // ====================== LOAD SESI AKTIF UNTUK MANUAL ======================
         async function loadSesiAktif() {
+            const select = document.getElementById('manualSesi');
+            const info = document.getElementById('manualSesiInfo');
             try {
                 const sesiList = await apiGetSesiAktif();
                 if (!sesiList || sesiList.length === 0) {
-                    sesiSelect.innerHTML = '<option value="">Tidak ada sesi aktif</option>';
-                    sesiInfo.innerHTML = '<span class="text-warning">Belum ada sesi yang aktif saat ini.</span>';
-                    btnSubmit.disabled = true;
+                    select.innerHTML = '<option value="">Tidak ada sesi aktif</option>';
+                    info.innerHTML = '<span class="text-warning">Belum ada sesi yang aktif saat ini.</span>';
                     return;
                 }
                 let options = '<option value="">-- Pilih sesi --</option>';
@@ -386,31 +408,34 @@
                     const selesai = new Date(sesi.waktu_selesai).toLocaleString('id-ID', { hour12: false });
                     options += `<option value="${sesi.id}">${sesi.nama_sesi} (${mulai} - ${selesai})</option>`;
                 });
-                sesiSelect.innerHTML = options;
-                sesiInfo.innerHTML = '<span class="text-success">Pilih sesi dan masukkan password.</span>';
+                select.innerHTML = options;
+                info.innerHTML = '<span class="text-success">Pilih sesi dan masukkan password.</span>';
             } catch (error) {
                 console.error('Gagal memuat sesi:', error);
-                sesiSelect.innerHTML = '<option value="">Gagal memuat sesi</option>';
-                sesiInfo.innerHTML = '<span class="text-danger">Error memuat data sesi.</span>';
+                select.innerHTML = '<option value="">Gagal memuat sesi</option>';
+                info.innerHTML = '<span class="text-danger">Error memuat data sesi.</span>';
             }
         }
 
-        // Jalankan geolokasi saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', getLocation);
-
         // ====================== SUBMIT ABSEN ======================
         window.submitAbsen = async function() {
-            // Ambil data berdasarkan mode
-            let id_sesi, password;
-            if (isQRMode) {
+            // Tentukan mode aktif
+            const activeTab = document.querySelector('.nav-tabs .nav-link.active').id;
+            let id_sesi, password, nama;
+
+            if (activeTab === 'qr-tab') {
+                // Mode QR
+                const urlParams = getQueryParams();
                 id_sesi = urlParams.sesi_id;
-                password = urlParams.token;
+                password = document.getElementById('qrPassword').value.trim();
+                nama = document.getElementById('qrNama').value.trim();
             } else {
-                id_sesi = sesiSelect.value;
-                password = passwordInput.value.trim();
+                // Mode Manual
+                id_sesi = document.getElementById('manualSesi').value;
+                password = document.getElementById('manualPassword').value.trim();
+                nama = document.getElementById('manualNama').value.trim();
             }
 
-            const nama = document.getElementById('nama').value.trim();
             const lat = document.getElementById('latitude').value;
             const lng = document.getElementById('longitude').value;
             const btn = document.getElementById('btnSubmit');
@@ -419,7 +444,7 @@
 
             // Validasi
             if (!id_sesi) {
-                showAlert(isQRMode ? 'ID sesi tidak ditemukan dari QR' : 'Pilih sesi terlebih dahulu', 'danger');
+                showAlert('Sesi belum dipilih atau tidak valid', 'danger');
                 return;
             }
             if (!password) {
@@ -450,6 +475,7 @@
             submitSpinner.classList.remove('d-none');
 
             try {
+                console.log('Mengirim data absen:', { id_sesi, nama, password, lat, lng });
                 const result = await apiAbsen({
                     id_sesi: id_sesi,
                     nama_petugas: nama,
@@ -460,23 +486,39 @@
                 });
 
                 showAlert('Absen berhasil! Terima kasih.', 'success');
-                document.getElementById('nama').value = '';
+                // Reset form sesuai mode
+                if (activeTab === 'qr-tab') {
+                    document.getElementById('qrNama').value = '';
+                } else {
+                    document.getElementById('manualNama').value = '';
+                    document.getElementById('manualPassword').value = '';
+                    // Opsi: reset pilihan sesi?
+                }
                 clearSignature();
                 getLocation(); // refresh lokasi
-                
-                // Jika mode manual, reset dropdown ke default
-                if (!isQRMode) {
-                    sesiSelect.value = '';
-                }
+                if (activeTab !== 'qr-tab') loadSesiAktif(); // reload sesi aktif
             } catch (error) {
-                console.error('Error:', error);
-                showAlert('Gagal mengirim absen: ' + error.message, 'danger');
+                console.error('Error detail:', error);
+                showAlert('Gagal mengirim absen: ' + error.message + '. Periksa koneksi atau URL API.', 'danger');
             } finally {
                 btn.disabled = false;
                 submitText.classList.remove('d-none');
                 submitSpinner.classList.add('d-none');
             }
         };
+
+        // Override jsonpRequest untuk logging (opsional, bisa ditambahkan di api.js)
+        // Jika ingin melihat URL yang dipanggil, kita bisa patch sementara
+        const originalJsonp = window.jsonpRequest;
+        if (originalJsonp) {
+            window.jsonpRequest = function(url) {
+                console.log('JSONP Request URL:', url);
+                return originalJsonp(url);
+            };
+        }
     </script>
+
+    <!-- Bootstrap JS untuk tab -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
