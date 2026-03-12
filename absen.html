@@ -9,15 +9,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <!-- Fallback configuration jika file config.js tidak ditemukan -->
-    <script>
-        window.CONFIG = window.CONFIG || {
-            API_URL: 'https://script.google.com/macros/s/AKfycbyfvnyUJUpCwWKvO6hRq_mcrvUif_QizubIgGOnaVY41oOUp76LavpWy7X78lZEJaNl/exec' // Ganti dengan URL Apps Script Anda
-        };
-    </script>
-    <!-- Muat file konfigurasi dan api.js (pastikan path sesuai) -->
-    <script src="js/config.js"></script>
-    <script src="js/api.js"></script>
+    <!-- Load konfigurasi dan API -->
+    <script src="/zakat/js/config.js"></script>
+    <script src="/zakat/js/api.js"></script>
     <style>
         /* ========== Style Modern ========== */
         body {
@@ -126,6 +120,13 @@
         .alert {
             border-radius: 16px;
         }
+        .mode-badge {
+            font-size: 0.85rem;
+            background: #e9ecef;
+            padding: 4px 10px;
+            border-radius: 40px;
+            color: #495057;
+        }
     </style>
 </head>
 <body>
@@ -136,8 +137,24 @@
         </div>
         <div class="card-body">
             <div id="alertMessage" class="alert d-none"></div>
-            <div id="infoSesi" class="info-sesi d-none mb-4">
+            
+            <!-- Indikator mode (QR/Manual) -->
+            <div class="d-flex justify-content-end mb-2">
+                <span id="modeBadge" class="mode-badge"><i class="bi bi-qr-code-scan me-1"></i>Mode QR</span>
+            </div>
+
+            <!-- Info sesi untuk mode QR -->
+            <div id="infoSesiQR" class="info-sesi d-none mb-4">
                 <i class="bi bi-info-circle me-2"></i> <span id="infoSesiText"></span>
+            </div>
+
+            <!-- Dropdown sesi untuk mode manual -->
+            <div id="manualSesiGroup" class="mb-4 d-none">
+                <label for="sesiSelect" class="form-label"><i class="bi bi-calendar-event me-1"></i>Pilih Sesi Aktif</label>
+                <select class="form-select" id="sesiSelect" required>
+                    <option value="">-- Memuat sesi --</option>
+                </select>
+                <div class="form-text" id="sesiInfo"></div>
             </div>
 
             <div class="mb-4">
@@ -147,7 +164,7 @@
 
             <div class="mb-4" id="passwordGroup">
                 <label for="password" class="form-label"><i class="bi bi-lock me-1"></i>Password Sesi</label>
-                <input type="text" class="form-control" id="password" placeholder="Terisi otomatis dari QR" readonly>
+                <input type="text" class="form-control" id="password" placeholder="Masukkan password sesi" required>
                 <div id="passwordInfo" class="form-text mt-1"></div>
             </div>
 
@@ -179,11 +196,6 @@
     </div>
 
     <script>
-        // ====================== CEK KONFIGURASI ======================
-        if (typeof CONFIG === 'undefined' || !CONFIG.API_URL) {
-            console.warn('Konfigurasi API tidak ditemukan. Menggunakan fallback.');
-        }
-
         // ====================== FUNGSI SHOWALERT ======================
         function showAlert(message, type) {
             const alertDiv = document.getElementById('alertMessage');
@@ -315,8 +327,6 @@
             }, 5000);
         }
 
-        document.addEventListener('DOMContentLoaded', getLocation);
-
         // ====================== BACA PARAMETER URL ======================
         function getQueryParams() {
             const params = new URLSearchParams(window.location.search);
@@ -326,42 +336,98 @@
             };
         }
 
+        // ====================== MODE DETECTION ======================
         const urlParams = getQueryParams();
-        if (urlParams.sesi_id && urlParams.token) {
-            document.getElementById('password').value = urlParams.token;
-            document.getElementById('passwordInfo').innerHTML = '<i class="bi bi-check-circle text-success"></i> Password terisi otomatis dari QR';
-            const infoSesi = document.getElementById('infoSesi');
-            infoSesi.classList.remove('d-none');
+        const isQRMode = urlParams.sesi_id && urlParams.token;
+
+        // Elemen yang akan dimanipulasi
+        const modeBadge = document.getElementById('modeBadge');
+        const infoSesiQR = document.getElementById('infoSesiQR');
+        const manualSesiGroup = document.getElementById('manualSesiGroup');
+        const passwordInput = document.getElementById('password');
+        const passwordInfo = document.getElementById('passwordInfo');
+        const sesiSelect = document.getElementById('sesiSelect');
+        const sesiInfo = document.getElementById('sesiInfo');
+        const btnSubmit = document.getElementById('btnSubmit');
+
+        // Set mode tampilan
+        if (isQRMode) {
+            modeBadge.innerHTML = '<i class="bi bi-qr-code-scan me-1"></i>Mode QR (Sesi dari QR)';
+            infoSesiQR.classList.remove('d-none');
+            manualSesiGroup.classList.add('d-none');
+            passwordInput.value = urlParams.token;
+            passwordInput.readOnly = true;
+            passwordInfo.innerHTML = '<i class="bi bi-check-circle text-success"></i> Password terisi otomatis dari QR';
             document.getElementById('infoSesiText').innerText = `Anda akan absen untuk sesi: ${urlParams.sesi_id}`;
         } else {
-            showAlert('URL tidak valid. Silakan pindai QR yang benar.', 'danger');
-            document.getElementById('btnSubmit').disabled = true;
+            modeBadge.innerHTML = '<i class="bi bi-pencil-square me-1"></i>Mode Manual (Pilih Sesi)';
+            infoSesiQR.classList.add('d-none');
+            manualSesiGroup.classList.remove('d-none');
+            passwordInput.readOnly = false;
+            passwordInput.value = '';
+            passwordInfo.innerHTML = '<i class="bi bi-info-circle"></i> Masukkan password yang diberikan panitia.';
+            // Load sesi aktif
+            loadSesiAktif();
         }
 
-        // ====================== SUBMIT ABSEN DENGAN API.JS ======================
+        // Fungsi load sesi aktif untuk mode manual
+        async function loadSesiAktif() {
+            try {
+                const sesiList = await apiGetSesiAktif();
+                if (!sesiList || sesiList.length === 0) {
+                    sesiSelect.innerHTML = '<option value="">Tidak ada sesi aktif</option>';
+                    sesiInfo.innerHTML = '<span class="text-warning">Belum ada sesi yang aktif saat ini.</span>';
+                    btnSubmit.disabled = true;
+                    return;
+                }
+                let options = '<option value="">-- Pilih sesi --</option>';
+                sesiList.forEach(sesi => {
+                    const mulai = new Date(sesi.waktu_mulai).toLocaleString('id-ID', { hour12: false });
+                    const selesai = new Date(sesi.waktu_selesai).toLocaleString('id-ID', { hour12: false });
+                    options += `<option value="${sesi.id}">${sesi.nama_sesi} (${mulai} - ${selesai})</option>`;
+                });
+                sesiSelect.innerHTML = options;
+                sesiInfo.innerHTML = '<span class="text-success">Pilih sesi dan masukkan password.</span>';
+            } catch (error) {
+                console.error('Gagal memuat sesi:', error);
+                sesiSelect.innerHTML = '<option value="">Gagal memuat sesi</option>';
+                sesiInfo.innerHTML = '<span class="text-danger">Error memuat data sesi.</span>';
+            }
+        }
+
+        // Jalankan geolokasi saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', getLocation);
+
+        // ====================== SUBMIT ABSEN ======================
         window.submitAbsen = async function() {
+            // Ambil data berdasarkan mode
+            let id_sesi, password;
+            if (isQRMode) {
+                id_sesi = urlParams.sesi_id;
+                password = urlParams.token;
+            } else {
+                id_sesi = sesiSelect.value;
+                password = passwordInput.value.trim();
+            }
+
             const nama = document.getElementById('nama').value.trim();
-            const password = document.getElementById('password').value.trim();
             const lat = document.getElementById('latitude').value;
             const lng = document.getElementById('longitude').value;
             const btn = document.getElementById('btnSubmit');
             const submitText = document.getElementById('submitText');
             const submitSpinner = document.getElementById('submitSpinner');
 
-            const params = getQueryParams();
-            const id_sesi = params.sesi_id || '';
-
-            // Validasi input
-            if (!nama) {
-                showAlert('Nama harus diisi', 'danger');
+            // Validasi
+            if (!id_sesi) {
+                showAlert(isQRMode ? 'ID sesi tidak ditemukan dari QR' : 'Pilih sesi terlebih dahulu', 'danger');
                 return;
             }
             if (!password) {
-                showAlert('Password tidak valid. Pastikan Anda menggunakan QR yang benar.', 'danger');
+                showAlert('Password sesi harus diisi', 'danger');
                 return;
             }
-            if (!id_sesi) {
-                showAlert('ID sesi tidak ditemukan. Silakan pindai QR yang valid.', 'danger');
+            if (!nama) {
+                showAlert('Nama harus diisi', 'danger');
                 return;
             }
             if (!lat || !lng) {
@@ -369,7 +435,7 @@
                 return;
             }
 
-            // Cek tanda tangan (canvas tidak boleh kosong)
+            // Cek tanda tangan kosong
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
             const isEmpty = imageData.every(val => val === 255);
             if (isEmpty) {
@@ -377,16 +443,13 @@
                 return;
             }
 
-            // Ambil base64 tanda tangan
             const ttdBase64 = canvas.toDataURL('image/png');
 
-            // Disable tombol
             btn.disabled = true;
             submitText.classList.add('d-none');
             submitSpinner.classList.remove('d-none');
 
             try {
-                // Gunakan apiAbsen dari api.js
                 const result = await apiAbsen({
                     id_sesi: id_sesi,
                     nama_petugas: nama,
@@ -396,16 +459,19 @@
                     ttd_base64: ttdBase64
                 });
 
-                // Jika sukses, tampilkan pesan dan reset form
                 showAlert('Absen berhasil! Terima kasih.', 'success');
                 document.getElementById('nama').value = '';
                 clearSignature();
-                getLocation(); // refresh lokasi untuk kemungkinan absen berikutnya
+                getLocation(); // refresh lokasi
+                
+                // Jika mode manual, reset dropdown ke default
+                if (!isQRMode) {
+                    sesiSelect.value = '';
+                }
             } catch (error) {
                 console.error('Error:', error);
                 showAlert('Gagal mengirim absen: ' + error.message, 'danger');
             } finally {
-                // Aktifkan kembali tombol
                 btn.disabled = false;
                 submitText.classList.remove('d-none');
                 submitSpinner.classList.add('d-none');
