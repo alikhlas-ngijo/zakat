@@ -11,48 +11,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <!-- Signature Pad -->
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
-
-    <!-- ==================== KONFIGURASI & API (INLINE) ==================== -->
-    <script>
-        // ==================== CONFIG ====================
-        // GANTI URL INI DENGAN URL DEPLOY APPS SCRIPT ANDA!
-        const BASE_URL = 'https://script.google.com/macros/s/AKfycbzWGLiUYWNuCJ-uHAagoDF9NQnhs1m9lJZKZxjo_YN-xvfm422sb8sj484sOCrt7DVj/exec';
-
-        // ==================== API FUNCTIONS (JSONP) ====================
-        function jsonpRequest(url) {
-            return new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                const callbackFunc = 'jsonp_callback_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                window[callbackFunc] = function(data) {
-                    delete window[callbackFunc];
-                    document.head.removeChild(script);
-                    if (data.success) {
-                        resolve(data.data);
-                    } else {
-                        reject(new Error(data.error || 'Unknown error'));
-                    }
-                };
-                const separator = url.includes('?') ? '&' : '?';
-                script.src = url + separator + 'callback=' + callbackFunc;
-                script.onerror = function() {
-                    delete window[callbackFunc];
-                    document.head.removeChild(script);
-                    reject(new Error('Network error'));
-                };
-                document.head.appendChild(script);
-            });
-        }
-
-        function apiGetSesiAktif() {
-            return jsonpRequest(BASE_URL + '?endpoint=sesi_aktif');
-        }
-
-        function apiAbsen(data) {
-            const dataStr = encodeURIComponent(JSON.stringify(data));
-            return jsonpRequest(BASE_URL + `?action=absen&data=${dataStr}`);
-        }
-    </script>
-
+    <!-- Load konfigurasi dan API -->
+    <script src="/zakat/js/config.js"></script>
+    <script src="/zakat/js/api.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -581,7 +542,7 @@
             } catch (error) {
                 console.error('Gagal memuat sesi:', error);
                 select.innerHTML = '<option value="">Gagal memuat sesi</option>';
-                info.innerHTML = '<span class="text-danger">Error memuat data sesi. Periksa koneksi atau URL BASE.</span>';
+                info.innerHTML = '<span class="text-danger">Error memuat data sesi. Periksa koneksi.</span>';
             }
         }
 
