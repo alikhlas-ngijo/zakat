@@ -1,5 +1,6 @@
-// api.js - Versi final dengan JSONP untuk semua operasi
-// Dilengkapi logging, penanganan error, dan validasi
+// api.js - Versi final untuk Sistem Zakat
+// Mendukung JSONP untuk semua operasi (GET dan POST via action)
+// Dilengkapi logging, penanganan error, dan validasi respons
 
 (function() {
   // Pastikan CONFIG tersedia
@@ -63,18 +64,14 @@
         cleanup();
         reject(new Error('Network error: Gagal memuat script JSONP. Periksa koneksi atau URL.'));
       };
-      script.onload = () => {
-        // Script berhasil dimuat, tapi respons akan ditangani oleh callback.
-        // Tidak perlu action tambahan.
-      };
-      document.head.appendChild(script); // Gunakan head agar lebih cepat
+      document.head.appendChild(script);
     });
   }
 
   /**
-   * Fungsi publik untuk GET data
-   * @param {string} endpoint
-   * @param {Object} params Parameter query
+   * Fungsi publik untuk GET data (mengambil data dari endpoint)
+   * @param {string} endpoint Nama sheet/endpoint (fitrah, mal, mustahik, dll)
+   * @param {Object} params Parameter query tambahan (misal { rt: '01' })
    * @returns {Promise<Array|Object>}
    */
   window.apiGet = function(endpoint, params = {}) {
@@ -95,8 +92,8 @@
 
   /**
    * Fungsi untuk operasi yang mengubah data via JSONP (GET dengan parameter action)
-   * @param {string} action 'add', 'edit', 'update', 'delete', 'import', dll
-   * @param {string} endpoint
+   * @param {string} action 'add', 'edit', 'update', 'delete', 'import', 'absen', dll
+   * @param {string} endpoint Nama sheet/endpoint (bisa kosong untuk action tertentu seperti absen)
    * @param {Object|Array} data Data yang dikirim (akan di-JSON-stringify)
    * @returns {Promise}
    */
@@ -112,9 +109,9 @@
   // ========== Wrapper functions untuk kemudahan ==========
 
   /**
-   * Menambah data baru
-   * @param {string} endpoint
-   * @param {Object} data
+   * Menambah data baru ke sheet tertentu
+   * @param {string} endpoint Nama sheet
+   * @param {Object} data Data baru (sesuai kolom di sheet)
    * @returns {Promise}
    */
   window.apiPost = function(endpoint, data) {
@@ -122,10 +119,10 @@
   };
 
   /**
-   * Mengedit data (replace seluruh field)
-   * @param {string} endpoint
-   * @param {string} id
-   * @param {Object} data
+   * Mengedit data (replace seluruh field) berdasarkan id
+   * @param {string} endpoint Nama sheet
+   * @param {string|number} id ID data yang akan diedit
+   * @param {Object} data Data baru (semua field akan ditimpa)
    * @returns {Promise}
    */
   window.apiEdit = function(endpoint, id, data) {
@@ -135,8 +132,8 @@
 
   /**
    * Menghapus data berdasarkan id
-   * @param {string} endpoint
-   * @param {string} id
+   * @param {string} endpoint Nama sheet
+   * @param {string|number} id ID data yang akan dihapus
    * @returns {Promise}
    */
   window.apiDelete = function(endpoint, id) {
@@ -144,10 +141,10 @@
   };
 
   /**
-   * Update sebagian field (misalnya untuk mengubah status)
-   * @param {string} endpoint
-   * @param {string} id
-   * @param {Object} data
+   * Update sebagian field (misalnya untuk mengubah status) berdasarkan id
+   * @param {string} endpoint Nama sheet
+   * @param {string|number} id ID data yang akan diupdate
+   * @param {Object} data Field-field yang akan diupdate
    * @returns {Promise}
    */
   window.apiUpdate = function(endpoint, id, data) {
@@ -155,9 +152,9 @@
   };
 
   /**
-   * Impor banyak data sekaligus
-   * @param {string} endpoint
-   * @param {Array} rows Array of objects
+   * Impor banyak data sekaligus ke sheet tertentu
+   * @param {string} endpoint Nama sheet
+   * @param {Array} rows Array of objects (sesuai kolom sheet)
    * @returns {Promise}
    */
   window.apiImport = function(endpoint, rows) {
@@ -166,8 +163,8 @@
 
   /**
    * Update settings (khusus untuk sheet settings)
-   * @param {string} key
-   * @param {any} value
+   * @param {string} key Nama setting
+   * @param {any} value Nilai baru
    * @returns {Promise}
    */
   window.apiUpdateSettings = function(key, value) {
@@ -184,7 +181,7 @@
   };
 
   /**
-   * Mendapatkan sesi yang aktif
+   * Mendapatkan daftar sesi yang sedang aktif (untuk dropdown absen)
    * @returns {Promise<Array>}
    */
   window.apiGetSesiAktif = function() {
