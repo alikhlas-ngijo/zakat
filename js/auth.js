@@ -1,71 +1,124 @@
-// auth.js - Final version with robust error handling and api.js integration
-
-// Ensure api.js is loaded properly
-if (typeof apiGet === 'undefined') {
-    alert('Kesalahan: File api.js tidak ditemukan atau gagal dimuat. Periksa kembali include script di HTML.');
-    throw new Error('apiGet is not defined');
-}
-
-document.getElementById('loginForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
-
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value.trim();
-    const submitBtn = this.querySelector('button[type="submit"]');
-    const originalBtnText = submitBtn.innerHTML;
-
-    // Basic validation
-    if (!email || !password) {
-        alert('Email dan password harus diisi!');
-        return;
-    }
-
-    // Disable button to prevent double submission
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memproses...';
-
-    try {
-        console.log('Login attempt with:', { email, password });
-
-        // Call login endpoint via apiGet (from api.js)
-        const user = await apiGet('login', { email, password });
-
-        // Validate response: must be an object with role property
-        if (!user || typeof user !== 'object') {
-            throw new Error('Respons dari server tidak valid.');
+// auth.js - Final version with enhanced error handling and validation
+(function() {
+    // Pastikan DOM sudah siap
+    document.addEventListener('DOMContentLoaded', function() {
+        const loginForm = document.getElementById('loginForm');
+        if (!loginForm) {
+            console.error('Elemen loginForm tidak ditemukan di halaman!');
+            return;
         }
 
-        // Ensure RT is in two-digit format (e.g., "4" → "04")
-        if (user.rt !== undefined && user.rt !== null) {
-            user.rt = user.rt.toString().padStart(2, '0');
-        }
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-        // Store user data in localStorage
-        localStorage.setItem('user', JSON.stringify(user));
+            // Ambil elemen input
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const submitBtn = this.querySelector('button[type="submit"]');
+            
+            if (!emailInput || !passwordInput || !submitBtn) {
+                alert('Terjadi kesalahan pada form. Hubungi administrator.');
+                return;
+            }
 
-        // Redirect based on role
-        if (user.role === 'admin') {
-            window.location.href = 'admin/dashboard.html';
-        } else if (user.role === 'koordinator') {
-            window.location.href = 'koordinator/dashboard.html';
-        } else {
-            alert('Role tidak dikenali: ' + user.role);
-        }
-    } catch (error) {
-        console.error('Login error:', error);
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+            const originalBtnText = submitBtn.innerHTML;
 
-        // Friendly error messages
-        let errorMessage = error.message;
-        if (error.message.includes('Network error') || error.message.includes('Timeout')) {
-            errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
-        } else if (error.message.includes('not found') || error.message.includes('unauthorized') || error.message.includes('gagal')) {
-            errorMessage = 'Email atau password salah.';
-        }
+            // Validasi input
+            if (!email || !password) {
+                alert('Email dan password harus diisi!');
+                return;
+            }
 
-        alert('Login gagal: ' + errorMessage);
+            // Validasi format email sederhana
+            if (!email.includes('@') || !email.includes('.')) {
+                alert('Format email tidak valid!');
+                return;
+            }
 
-        // Re-enable button
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalBtnText;
-    }
-});
+            // Disable tombol
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memproses...';
+
+            try {
+                // Pastikan fungsi apiGet tersedia
+                if (typeof window.apiGet !== 'function') {
+                    throw new Error('Fungsi API tidak tersedia. Periksa koneksi atau muat ulang halaman.');
+                }
+
+                console.log('Mencoba login dengan:', { email, password });
+
+                // Panggil endpoint login via apiGet (dari api.js)
+                // apiGet akan mengembalikan data langsung (setelah diproses oleh api.js)
+                const response = await window.apiGet('login', { email, password });
+
+                console.log('Respons login:', response);
+
+                // Validasi respons
+                if (!response || typeof response !== 'object') {
+                    throw new Error('Respons dari server tidak valid.');
+                }
+
+                // Jika respons memiliki properti error (misal dari server: { success: false, error: ... })
+                if (response.error) {
+                    throw new Error(response.error);
+                }
+
+                // Respons bisa langsung berisi objek user, atau { success: true, data: user }
+                let user = response;
+                if (response.success === true && response.data) {
+                    user = response.data;
+                }
+
+                // Pastikan user memiliki properti yang diperlukan
+                if (!user || !user.email || !user.role) {
+                    throw new Error('Data user tidak lengkap dari server.');
+                }
+
+                // Format RT dua digit jika ada
+                if (user.rt !== undefined && user.rt !== null) {
+                    user.rt = user.rt.toString().padStart(2, '0');
+                } else {
+                    user.rt = ''; // pastikan ada
+                }
+
+                // Simpan user ke localStorage
+                localStorage.setItem('user', JSON.stringify(user));
+
+                // Redirect berdasarkan role
+                if (user.role === 'admin') {
+                    window.location.href = 'admin/dashboard.html';
+                } else if (user.role === 'koordinator') {
+                    window.location.href = 'koordinator/dashboard.html';
+                } else {
+                    alert('Role tidak dikenali: ' + user.role);
+                    // Kembalikan tombol ke normal
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+
+                // Pesan error yang lebih ramah
+                let errorMessage = error.message;
+                if (error.message.includes('Network error') || error.message.includes('Timeout')) {
+                    errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
+                } else if (error.message.toLowerCase().includes('not found') || 
+                           error.message.toLowerCase().includes('unauthorized') || 
+                           error.message.toLowerCase().includes('gagal') ||
+                           error.message.toLowerCase().includes('salah')) {
+                    errorMessage = 'Email atau password salah.';
+                } else if (error.message.includes('Fungsi API tidak tersedia')) {
+                    errorMessage = 'Terjadi kesalahan teknis. Muat ulang halaman.';
+                }
+
+                alert('Login gagal: ' + errorMessage);
+
+                // Aktifkan kembali tombol
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        });
+    });
+})();
