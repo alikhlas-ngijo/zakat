@@ -1,4 +1,4 @@
 // config.js
 var CONFIG = {
-    API_URL: 'https://script.google.com/macros/s/AKfycbw2FMgpixcnF68aUfOn1GWhh7d2b-NSJG4jE3DBITc7n5VBc8FsvRloE7soIZM0nIv9/exec'
+    API_URL: 'https://script.google.com/macros/s/AKfycbwN1Gpj8PXz22E4-AM3jLax54_QCvMoQYNXaxSXTVapbost6gCUEd9QFLsjVk332iE3/exec'
 };
