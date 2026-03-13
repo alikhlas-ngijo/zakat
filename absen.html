@@ -332,18 +332,19 @@
         // SIGNATURE PAD
         // =====================================================
         function initSignaturePad() {
-            const canvas = document.getElementById('signatureCanvas');
-            if (!canvas) return;
+    const canvas = document.getElementById('signatureCanvas');
+    if (!canvas) return;
 
-            const container = canvas.parentElement;
-            canvas.width = container.clientWidth;
-            canvas.height = 160;
+    // Set ukuran canvas lebih kecil (200x80)
+    canvas.width = 200;
+    canvas.height = 80;
 
-            signaturePad = new SignaturePad(canvas, {
-                backgroundColor: 'white',
-                penColor: 'black'
-            });
-            signaturePad.clear();
+    signaturePad = new SignaturePad(canvas, {
+        backgroundColor: 'white',
+        penColor: 'black'
+    });
+    signaturePad.clear();
+    // ... sisanya tetap sama
 
             document.getElementById('clearSignature').addEventListener('click', () => {
                 signaturePad.clear();
@@ -547,7 +548,7 @@
                 return;
             }
 
-            const ttdBase64 = signaturePad.toDataURL('image/jpeg', 0.5);
+            const ttdBase64 = signaturePad.toDataURL('image/jpeg', 0.3);
 
             btn.disabled = true;
             submitText.classList.add('d-none');
