@@ -130,12 +130,6 @@
             padding: 0.4rem 1.6rem;
             font-size: 0.9rem;
         }
-        .location-status {
-            background: #f8fafc;
-            border-radius: 14px;
-            padding: 12px 16px;
-            font-size: 0.95rem;
-        }
         .info-sesi {
             background: #e6f7e6;
             border-radius: 16px;
@@ -265,18 +259,8 @@
                 <div class="form-text mt-2">Tanda tangani di area ini (bisa dengan jari)</div>
             </div>
 
-            <!-- Lokasi -->
-            <div class="mb-4">
-                <label class="form-label"><i class="bi bi-geo-alt me-1"></i>Lokasi</label>
-                <div id="locationStatus" class="location-status text-muted d-flex align-items-center">
-                    <span class="spinner-border spinner-border-sm me-2" role="status"></span> Mendapatkan lokasi...
-                </div>
-                <input type="hidden" id="latitude" value="">
-                <input type="hidden" id="longitude" value="">
-            </div>
-
             <!-- Tombol Submit -->
-            <button class="btn-absen" id="btnSubmit" onclick="submitAbsen()" disabled>
+            <button class="btn-absen" id="btnSubmit" onclick="submitAbsen()">
                 <span id="submitText">Absen Sekarang</span>
                 <span id="submitSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
             </button>
@@ -331,52 +315,6 @@
             alertDiv.innerHTML = message;
             alertDiv.classList.remove('d-none');
             setTimeout(() => alertDiv.classList.add('d-none'), 5000);
-        }
-
-        // =====================================================
-        // GEOLOKASI
-        // =====================================================
-        let locationTimeout;
-        function getLocation() {
-            const locStatus = document.getElementById('locationStatus');
-            const latInput = document.getElementById('latitude');
-            const lngInput = document.getElementById('longitude');
-            const btnSubmit = document.getElementById('btnSubmit');
-
-            if (!navigator.geolocation) {
-                locStatus.innerHTML = '<span class="text-danger">Geolokasi tidak didukung</span>';
-                return;
-            }
-
-            navigator.geolocation.getCurrentPosition(
-                function(position) {
-                    latInput.value = position.coords.latitude;
-                    lngInput.value = position.coords.longitude;
-                    locStatus.innerHTML = `<span class="text-success"><i class="bi bi-check-circle me-1"></i> Lokasi: ${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}</span>`;
-                    btnSubmit.disabled = false;
-                    if (locationTimeout) clearTimeout(locationTimeout);
-                },
-                function(error) {
-                    let msg = '';
-                    switch(error.code) {
-                        case error.PERMISSION_DENIED: msg = 'Izin lokasi ditolak. Aktifkan izin lokasi.'; break;
-                        case error.POSITION_UNAVAILABLE: msg = 'Lokasi tidak tersedia.'; break;
-                        case error.TIMEOUT: msg = 'Waktu habis. Coba lagi.'; break;
-                        default: msg = 'Kesalahan tidak diketahui.';
-                    }
-                    locStatus.innerHTML = `<span class="text-danger">${msg}</span>`;
-                    btnSubmit.disabled = true;
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 0
-                }
-            );
-
-            locationTimeout = setTimeout(() => {
-                locStatus.innerHTML = '<span class="text-warning">Mendapatkan lokasi... (mungkin perlu izin)</span>';
-            }, 5000);
         }
 
         // =====================================================
@@ -587,8 +525,10 @@
                 nama = document.getElementById('manualNama').value.trim();
             }
 
-            const lat = document.getElementById('latitude').value;
-            const lng = document.getElementById('longitude').value;
+            // Lokasi tidak digunakan lagi, kirim 0 agar server melewati validasi
+            const lat = 0;
+            const lng = 0;
+
             const btn = document.getElementById('btnSubmit');
             const submitText = document.getElementById('submitText');
             const submitSpinner = document.getElementById('submitSpinner');
@@ -604,10 +544,6 @@
             }
             if (!nama) {
                 showToast('Nama harus diisi', 'danger');
-                return;
-            }
-            if (!lat || !lng) {
-                showToast('Lokasi belum didapatkan. Tunggu atau periksa izin lokasi.', 'danger');
                 return;
             }
 
@@ -628,8 +564,8 @@
                     id_sesi: id_sesi,
                     nama_petugas: nama,
                     password: password,
-                    latitude: parseFloat(lat),
-                    longitude: parseFloat(lng),
+                    latitude: lat,
+                    longitude: lng,
                     ttd_base64: ttdBase64
                 });
 
@@ -643,7 +579,6 @@
                 }
                 signaturePad.clear();
                 if (!isQRMode) clearFormState();
-                getLocation(); // refresh lokasi
                 if (!isQRMode) loadSesiAktif(true); // reload sesi aktif setelah absen
             } catch (error) {
                 console.error('Error detail:', error);
@@ -698,9 +633,6 @@
 
             // Inisialisasi signature pad (setelah mode ditentukan)
             initSignaturePad();
-
-            // Mulai geolokasi
-            getLocation();
 
             // Event listeners untuk menyimpan state (hanya manual)
             if (!isQRMode) {
