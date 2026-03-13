@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <!-- Signature Pad -->
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
-    <!-- Load konfigurasi dan API -->
+    <!-- Konfigurasi dan API -->
     <script src="/js/config.js"></script>
     <script src="/js/api.js"></script>
     <style>
@@ -265,7 +265,7 @@
                 <span id="submitSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
             </button>
 
-            <!-- Alert cadangan -->
+            <!-- Alert cadangan (jarang dipakai) -->
             <div id="alertMessage" class="alert d-none mt-3"></div>
         </div>
     </div>
@@ -276,7 +276,7 @@
         // =====================================================
         let cachedSesi = null;
         let signaturePad;
-        let isQRMode = false; // akan ditentukan dari URL
+        let isQRMode = false;
         let qrSesiId = null;
         let qrToken = null;
 
@@ -335,6 +335,7 @@
             const canvas = document.getElementById('signatureCanvas');
             if (!canvas) return;
 
+            // Sesuaikan ukuran canvas dengan lebar kontainer
             const container = canvas.parentElement;
             canvas.width = container.clientWidth;
             canvas.height = 160;
@@ -421,10 +422,12 @@
 
             try {
                 const sesiList = await apiGetSesiAktif();
-                cachedSesi = sesiList;
-                sessionStorage.setItem(cacheKey, JSON.stringify(sesiList));
+                // Pastikan data adalah array
+                const data = Array.isArray(sesiList) ? sesiList : (sesiList.data || []);
+                cachedSesi = data;
+                sessionStorage.setItem(cacheKey, JSON.stringify(data));
                 sessionStorage.setItem(cacheTimeKey, now.toString());
-                return sesiList;
+                return data;
             } catch (error) {
                 console.error('Gagal fetch sesi:', error);
                 throw error;
@@ -447,7 +450,7 @@
         }
 
         async function loadSesiAktif(forceRefresh = false) {
-            if (isQRMode) return; // tidak perlu load sesi untuk QR
+            if (isQRMode) return;
             const select = document.getElementById('manualSesi');
             const info = document.getElementById('manualSesiInfo');
 
@@ -458,10 +461,8 @@
             try {
                 let sesiList;
                 if (forceRefresh) {
-                    // Paksa ambil dari API
                     sesiList = await fetchSesiAktif(true);
                 } else {
-                    // Coba ambil dari cache dulu, lalu update background
                     const cached = getCachedSesi();
                     if (cached && cached.length > 0) {
                         populateSesiDropdown(cached, select, info);
@@ -481,6 +482,7 @@
                 console.error('Gagal memuat sesi:', error);
                 select.innerHTML = '<option value="">Gagal memuat sesi</option>';
                 info.innerHTML = '<span class="text-danger">Error memuat data sesi. Periksa koneksi.</span>';
+                showToast('Gagal memuat daftar sesi: ' + error.message, 'danger');
             }
         }
 
@@ -517,7 +519,7 @@
 
             if (isQRMode) {
                 id_sesi = qrSesiId;
-                password = qrToken; // token sebagai password
+                password = qrToken;
                 nama = document.getElementById('qrNama').value.trim();
             } else {
                 id_sesi = document.getElementById('manualSesi').value;
@@ -525,7 +527,7 @@
                 nama = document.getElementById('manualNama').value.trim();
             }
 
-            // Lokasi tidak digunakan lagi, kirim 0 agar server melewati validasi
+            // Lokasi tidak digunakan, kirim 0 agar server melewati validasi
             const lat = 0;
             const lng = 0;
 
@@ -599,7 +601,6 @@
             qrSesiId = urlParams.sesi_id;
             qrToken = urlParams.token;
 
-            // Sembunyikan/munculkan elemen berdasarkan mode
             const navTabs = document.getElementById('absenTab');
             const qrPanel = document.getElementById('qr');
             const manualPanel = document.getElementById('manual');
@@ -612,27 +613,26 @@
                 qrPanel.classList.add('show', 'active');
                 manualPanel.classList.remove('show', 'active');
                 qrInfoSesi.classList.remove('d-none');
+                // Tampilkan info sesi (jika ada data sesi, bisa ditampilkan lebih detail)
                 document.getElementById('qrInfoSesiText').innerText = `Anda akan absen untuk sesi: ${qrSesiId}`;
                 qrPasswordInput.value = qrToken;
-
-                // Hapus state form
                 clearFormState();
             } else {
-                // Mode manual: tampilkan nav tabs, tapi hanya tab manual yang muncul
-                // Sembunyikan tab QR dengan CSS
-                const qrTabLi = document.querySelector('#qr-tab').closest('li');
+                // Mode manual: sembunyikan tab QR, aktifkan tab manual
+                const qrTabLi = document.querySelector('#qr-tab')?.closest('li');
                 if (qrTabLi) qrTabLi.style.display = 'none';
-                // Aktifkan tab manual
                 const manualTab = new bootstrap.Tab(document.getElementById('manual-tab'));
                 manualTab.show();
-                navTabs.style.display = 'flex'; // tampilkan nav tabs
-
-                // Load sesi (tanpa paksa cache dulu)
+                navTabs.style.display = 'flex';
+                // Load sesi
                 loadSesiAktif(false);
             }
 
             // Inisialisasi signature pad (setelah mode ditentukan)
-            initSignaturePad();
+            // Gunakan setTimeout untuk memastikan canvas sudah dirender dengan lebar yang benar
+            setTimeout(() => {
+                initSignaturePad();
+            }, 100);
 
             // Event listeners untuk menyimpan state (hanya manual)
             if (!isQRMode) {
