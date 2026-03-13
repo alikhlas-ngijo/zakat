@@ -1,6 +1,7 @@
 // api.js - Versi final dengan peningkatan stabilitas dan penanganan error
 // Mendukung JSONP untuk semua operasi (GET dan POST via action)
-// Dilengkapi logging, validasi respons, dan fallback konfigurasi
+// Dilengkapi logging, validasi respons, timeout, dan kompatibilitas penuh dengan Chrome
+// (c) Masjid Al-Ikhlas Ngijo
 
 (function(global) {
     'use strict';
