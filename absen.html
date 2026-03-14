@@ -113,7 +113,7 @@
             display: block;
             width: 100%;
             height: auto;
-            max-height: 160px;
+            max-height: 120px;  /* Diperkecil dari 160px */
             background: white;
             border-radius: 12px;
             touch-action: none;
@@ -250,7 +250,8 @@
             <div class="mb-4">
                 <label class="form-label"><i class="bi bi-pencil me-1"></i>Tanda Tangan Digital</label>
                 <div class="signature-area">
-                    <canvas id="signatureCanvas" width="400" height="160"></canvas>
+                    <!-- Ukuran canvas diperkecil menjadi 300x120 -->
+                    <canvas id="signatureCanvas" width="300" height="120"></canvas>
                 </div>
                 <div class="signature-buttons">
                     <button type="button" class="btn btn-outline-secondary" id="clearSignature">Hapus</button>
@@ -335,9 +336,9 @@
             const canvas = document.getElementById('signatureCanvas');
             if (!canvas) return;
 
-            // Set ukuran canvas proporsional
-            canvas.width = 400;
-            canvas.height = 160;
+            // Set ukuran canvas proporsional (diperkecil)
+            canvas.width = 300;   // dari 400
+            canvas.height = 120;  // dari 160
 
             signaturePad = new SignaturePad(canvas, {
                 backgroundColor: 'white',
@@ -547,7 +548,8 @@
                 return;
             }
 
-            const ttdBase64 = signaturePad.toDataURL('image/jpeg', 0.3);
+            // Turunkan kualitas dari 0.3 menjadi 0.2
+            const ttdBase64 = signaturePad.toDataURL('image/jpeg', 0.2);
 
             btn.disabled = true;
             submitText.classList.add('d-none');
