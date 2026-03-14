@@ -245,15 +245,6 @@
             height: 4rem;
             border-width: 0.3rem;
         }
-        /* Card mode penyaluran */
-        .muzaki-list {
-            max-height: 200px;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
-        .muzaki-list .form-check {
-            margin-bottom: 0.25rem;
-        }
     </style>
 </head>
 <body>
@@ -296,86 +287,66 @@
         <div class="container-fluid">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="text-success" id="pageTitle">📋 Data Distribusi Zakat Fitrah</h2>
-                <div id="normalActionButtons">
+                <div>
+                    <!-- Tombol Undo/Redo & Hapus Terpilih -->
                     <button class="btn btn-secondary me-2" id="undoBtn" onclick="undo()" disabled><i class="bi bi-arrow-return-left"></i> Undo</button>
                     <button class="btn btn-secondary me-2" id="redoBtn" onclick="redo()" disabled><i class="bi bi-arrow-return-right"></i> Redo</button>
                     <button class="btn btn-danger me-2" id="deleteSelectedBtn" onclick="deleteSelected()" disabled><i class="bi bi-trash"></i> Hapus Terpilih</button>
                     <button class="btn btn-success me-2" onclick="tambahData()"><i class="bi bi-plus-circle"></i> Tambah Data</button>
                     <button class="btn btn-info me-2" onclick="exportCSV()"><i class="bi bi-download"></i> Ekspor CSV</button>
+                    <button class="btn btn-primary me-2" onclick="bukaModalMassal()"><i class="bi bi-check-all"></i> Penyaluran Massal</button>
                     <button class="btn btn-warning" onclick="document.getElementById('importFile').click()"><i class="bi bi-upload"></i> Impor CSV</button>
                     <input type="file" id="importFile" accept=".csv" style="display: none;" onchange="importCSV(this.files[0])">
                 </div>
-                <button class="btn btn-primary" id="toggleModeBtn" onclick="togglePenyaluranMode()"><i class="bi bi-phone"></i> Mode Penyaluran</button>
             </div>
 
-            <!-- Pencarian Global -->
-            <div class="row mb-3">
-                <div class="col-md-4 offset-md-8">
-                    <div class="input-group">
-                        <span class="input-group-text bg-success text-white"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control" id="searchInput" placeholder="Cari nama..." onkeyup="filterData()">
-                        <button class="btn btn-outline-secondary" type="button" onclick="clearSearch()"><i class="bi bi-x"></i></button>
+            <!-- Action Bar: Filter Status + Search -->
+            <div class="action-bar">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-3">
+                        <div class="input-group">
+                            <span class="input-group-text bg-success text-white"><i class="bi bi-funnel"></i></span>
+                            <select class="form-select" id="filterStatus" onchange="filterData()">
+                                <option value="semua">Semua Status</option>
+                                <option value="belum disalurkan">Belum Disalurkan</option>
+                                <option value="sudah disalurkan">Sudah Disalurkan</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Konten Mode Normal -->
-            <div id="normalModeContent">
-                <div class="action-bar">
-                    <div class="row g-3 align-items-center">
-                        <div class="col-md-3">
-                            <div class="input-group">
-                                <span class="input-group-text bg-success text-white"><i class="bi bi-funnel"></i></span>
-                                <select class="form-select" id="filterStatus" onchange="filterData()">
-                                    <option value="semua">Semua Status</option>
-                                    <option value="belum disalurkan">Belum Disalurkan</option>
-                                    <option value="sudah disalurkan">Sudah Disalurkan</option>
-                                </select>
-                            </div>
+                    <div class="col-md-9">
+                        <div class="input-group">
+                            <span class="input-group-text bg-success text-white"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" id="searchInput" placeholder="Cari nama..." onkeyup="filterData()">
+                            <button class="btn btn-outline-secondary" type="button" onclick="clearSearch()"><i class="bi bi-x"></i></button>
                         </div>
                     </div>
                 </div>
-
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-success text-center">
-                            <tr>
-                                <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
-                                <th>No</th>
-                                <th>Nama Muzaki</th>
-                                <th>Jml Jiwa</th>
-                                <th>Beras (kg)</th>
-                                <th>Uang (Rp)</th>
-                                <th>RT</th>
-                                <th>Tgl Input</th>
-                                <th>Status</th>
-                                <th>Tgl Salur</th>
-                                <th>Penerima</th>
-                                <th>Input By</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                            <tr><td colspan="13" class="text-center">Memuat data...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
             </div>
 
-            <!-- Konten Mode Penyaluran -->
-            <div id="penyaluranModeContainer" style="display: none;">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="mb-0">Mode Penyaluran (Centang Muzaki yang Tersalurkan)</h4>
-                    <div>
-                        <label for="sortMustahik" class="form-label me-2">Urutkan:</label>
-                        <select id="sortMustahik" class="form-select d-inline-block w-auto" onchange="sortPenyaluranCards()">
-                            <option value="nama">Nama Mustahik (A-Z)</option>
-                            <option value="rt">RT</option>
-                            <option value="jumlah">Jumlah Muzaki</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="row" id="penyaluranCards"></div>
+            <!-- Tabel Data -->
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-success text-center">
+                        <tr>
+                            <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
+                            <th>No</th>
+                            <th>Nama Muzaki</th>
+                            <th>Jml Jiwa</th>
+                            <th>Beras (kg)</th>
+                            <th>Uang (Rp)</th>
+                            <th>RT</th>
+                            <th>Tgl Input</th>
+                            <th>Status</th>
+                            <th>Tgl Salur</th>
+                            <th>Penerima</th>
+                            <th>Input By</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr><td colspan="13" class="text-center">Memuat data...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </main>
@@ -456,10 +427,45 @@
         </div>
     </div>
 
+    <!-- Modal Penyaluran Massal -->
+    <div class="modal fade" id="massalModal" tabindex="-1" aria-labelledby="massalModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="massalModalLabel">Penyaluran Massal Zakat Fitrah</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Centang pada baris yang ingin ditandai sebagai <strong>Sudah Disalurkan</strong>. Klik Simpan untuk memperbarui semua data.</p>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead class="table-success">
+                                <tr>
+                                    <th>No</th>
+                                    <th>Nama Muzaki</th>
+                                    <th>Jml Jiwa</th>
+                                    <th>Total Beras (kg)</th>
+                                    <th>Sudah Disalurkan?</th>
+                                </tr>
+                            </thead>
+                            <tbody id="massalTableBody">
+                                <!-- diisi via javascript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-success" onclick="simpanPenyaluranMassal()">Simpan Semua</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../js/config.js"></script>
-    <script src="../js/api.js"></script>
-    <script src="../js/loader.js"></script>
+    <script src="/zakat/js/config.js"></script>
+    <script src="/zakat/js/api.js"></script>
+    <script src="/zakat/js/loader.js"></script>
     <script>
         // ====================== FUNGSI SIDEBAR ======================
         function toggleSidebar() {
@@ -495,14 +501,10 @@
         let filteredData = [];
         let mustahikList = [];
         let mustahikMap = {};
-        let modalInstance, salurkanModalInstance;
+        let modalInstance, salurkanModalInstance, massalModalInstance;
         let hargaPerKg = 18000;
         let berasPerJiwa = 2.5;
         let currentSalurkanId = null;
-
-        // Variabel untuk mode penyaluran
-        let penyaluranModeActive = false;
-        let previousFilterStatus = 'semua';
 
         // ====================== UNDO/REDO & MULTIPLE DELETE ======================
         let undoStack = [];
@@ -661,12 +663,7 @@
                 if (searchText && !(item.nama && item.nama.toLowerCase().includes(searchText))) return false;
                 return true;
             });
-
-            if (penyaluranModeActive) {
-                renderPenyaluranCards();
-            } else {
-                renderTable(filteredData);
-            }
+            renderTable(filteredData);
         }
 
         function clearSearch() {
@@ -716,7 +713,7 @@
             `}).join('');
         }
 
-        // ====================== UPDATE STATUS (mode normal) ======================
+        // ====================== UPDATE STATUS ======================
         async function bukaModalSalurkan(id) {
             currentSalurkanId = id;
             document.getElementById('salurkanMustahik').value = '';
@@ -986,186 +983,73 @@
             .catch(err => ({ success: false, error: err.message }));
         }
 
-        // ====================== MODE PENYALURAN (BARU) ======================
-        function togglePenyaluranMode() {
-            const normalContent = document.getElementById('normalModeContent');
-            const penyaluranContainer = document.getElementById('penyaluranModeContainer');
-            const toggleBtn = document.getElementById('toggleModeBtn');
-            const normalActionButtons = document.getElementById('normalActionButtons');
-
-            if (!penyaluranModeActive) {
-                previousFilterStatus = document.getElementById('filterStatus').value;
-                document.getElementById('filterStatus').value = 'belum disalurkan';
-                normalContent.style.display = 'none';
-                penyaluranContainer.style.display = 'block';
-                normalActionButtons.style.display = 'none';
-                toggleBtn.innerHTML = '<i class="bi bi-table"></i> Mode Normal';
-                penyaluranModeActive = true;
-                filterData(); // akan memanggil renderPenyaluranCards()
+        // ====================== PENYALURAN MASSAL ======================
+        function bukaModalMassal() {
+            const tbody = document.getElementById('massalTableBody');
+            if (!filteredData.length) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">Tidak ada data.</td></tr>';
             } else {
-                document.getElementById('filterStatus').value = previousFilterStatus;
-                normalContent.style.display = 'block';
-                penyaluranContainer.style.display = 'none';
-                normalActionButtons.style.display = 'block';
-                toggleBtn.innerHTML = '<i class="bi bi-phone"></i> Mode Penyaluran';
-                penyaluranModeActive = false;
-                filterData(); // kembali ke tabel
+                tbody.innerHTML = filteredData.map((item, index) => {
+                    const status = item.status || 'belum disalurkan';
+                    const checked = status === 'sudah disalurkan' ? 'checked' : '';
+                    return `
+                    <tr>
+                        <td>${index+1}</td>
+                        <td>${item.nama || '-'}</td>
+                        <td class="text-center">${item.jiwa || 0}</td>
+                        <td class="text-center">${item.beras || 0}</td>
+                        <td class="text-center">
+                            <input type="checkbox" class="massal-checkbox" data-id="${item.id}" ${checked}>
+                        </td>
+                    </tr>
+                `}).join('');
             }
+            massalModalInstance.show();
         }
 
-        function sortPenyaluranCards() {
-            if (penyaluranModeActive) {
-                renderPenyaluranCards();
-            }
-        }
-
-        function renderPenyaluranCards() {
-            const container = document.getElementById('penyaluranCards');
-            if (!container) return;
-
-            // Ambil data yang belum disalurkan dan sudah punya penerima
-            const belumData = filteredData.filter(item => item.id_mustahik || item.penerima_manual);
-
-            // Kelompokkan berdasarkan penerima
-            const mustahikGroups = new Map();
-
-            belumData.forEach(item => {
-                let mustahikId, mustahikNama, mustahikRt;
-
-                if (item.id_mustahik) {
-                    const must = mustahikList.find(m => m.id == item.id_mustahik);
-                    if (must) {
-                        mustahikId = must.id;
-                        mustahikNama = must.nama;
-                        mustahikRt = must.rt;
-                    } else {
-                        mustahikId = 'unknown_' + item.id;
-                        mustahikNama = '(ID tidak dikenal)';
-                        mustahikRt = null;
-                    }
-                } else if (item.penerima_manual) {
-                    mustahikId = 'manual_' + item.penerima_manual.replace(/\s+/g, '_');
-                    mustahikNama = item.penerima_manual;
-                    mustahikRt = null;
-                } else {
-                    return;
+        async function simpanPenyaluranMassal() {
+            const checkboxes = document.querySelectorAll('#massalTableBody .massal-checkbox');
+            const updates = [];
+            checkboxes.forEach(cb => {
+                const id = cb.dataset.id;
+                const item = filteredData.find(d => d.id == id);
+                if (!item) return;
+                const newStatus = cb.checked ? 'sudah disalurkan' : 'belum disalurkan';
+                if (newStatus !== (item.status || 'belum disalurkan')) {
+                    updates.push({ id, newStatus });
                 }
-
-                if (!mustahikGroups.has(mustahikId)) {
-                    mustahikGroups.set(mustahikId, {
-                        id: mustahikId,
-                        nama: mustahikNama,
-                        rt: mustahikRt,
-                        items: []
-                    });
-                }
-                const group = mustahikGroups.get(mustahikId);
-                group.items.push({
-                    id: item.id,
-                    nama: item.nama || '-',
-                    beras: item.beras || 0
-                });
             });
 
-            let mustahikArray = Array.from(mustahikGroups.values());
-
-            // Urutkan
-            const sortBy = document.getElementById('sortMustahik').value;
-            if (sortBy === 'nama') {
-                mustahikArray.sort((a, b) => a.nama.localeCompare(b.nama));
-            } else if (sortBy === 'rt') {
-                mustahikArray.sort((a, b) => {
-                    if (a.rt === b.rt) return a.nama.localeCompare(b.nama);
-                    if (!a.rt) return 1;
-                    if (!b.rt) return -1;
-                    return a.rt.localeCompare(b.rt);
-                });
-            } else if (sortBy === 'jumlah') {
-                mustahikArray.sort((a, b) => b.items.length - a.items.length);
-            }
-
-            if (mustahikArray.length === 0) {
-                container.innerHTML = '<div class="col-12"><div class="alert alert-info">Tidak ada mustahik yang perlu dikunjungi.</div></div>';
+            if (updates.length === 0) {
+                alert('Tidak ada perubahan status.');
+                massalModalInstance.hide();
                 return;
             }
 
-            let html = '';
-            mustahikArray.forEach(group => {
-                const rtText = group.rt ? `RT ${group.rt}` : 'RT tidak diketahui';
-                const itemCount = group.items.length;
-                const totalBeras = group.items.reduce((sum, i) => sum + i.beras, 0).toFixed(1);
-
-                const itemsHtml = group.items.map(item => `
-                    <div class="form-check">
-                        <input class="form-check-input muzaki-checkbox-${group.id}" type="checkbox" value="${item.id}" id="chk_${item.id}">
-                        <label class="form-check-label" for="chk_${item.id}">
-                            ${item.nama} - ${item.beras} kg beras
-                        </label>
-                    </div>
-                `).join('');
-
-                html += `
-                <div class="col-md-6 col-lg-4 mb-3">
-                    <div class="card h-100 shadow-sm" data-mustahik-id="${group.id}">
-                        <div class="card-body">
-                            <h5 class="card-title">${group.nama}</h5>
-                            <p class="card-text mb-1"><small class="text-muted">${rtText}</small></p>
-                            <p class="card-text mb-2">Total: ${itemCount} muzaki, ${totalBeras} kg beras</p>
-                            <hr>
-                            <div class="muzaki-list mb-2">
-                                ${itemsHtml}
-                            </div>
-                            <div class="d-flex justify-content-between mt-2">
-                                <button class="btn btn-outline-primary btn-sm" onclick="centangSemua('${group.id}')"><i class="bi bi-check-all"></i> Centang Semua</button>
-                                <button class="btn btn-success btn-sm" onclick="simpanPenyaluran('${group.id}')"><i class="bi bi-save"></i> Simpan Penyaluran</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        function centangSemua(mustahikId) {
-            const checkboxes = document.querySelectorAll(`.muzaki-checkbox-${mustahikId}`);
-            checkboxes.forEach(cb => cb.checked = true);
-        }
-
-        async function simpanPenyaluran(mustahikId) {
-            const checkboxes = document.querySelectorAll(`.muzaki-checkbox-${mustahikId}:checked`);
-            if (checkboxes.length === 0) {
-                alert('Tidak ada muzaki yang dipilih.');
-                return;
-            }
-
-            const ids = Array.from(checkboxes).map(cb => cb.value);
-            if (!confirm(`Tandai ${ids.length} muzaki sebagai sudah disalurkan?`)) return;
-
-            const originalBtn = event.target;
-            originalBtn.disabled = true;
-            originalBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Menyimpan...';
+            if (!confirm(`Akan mengubah status ${updates.length} data. Lanjutkan?`)) return;
 
             try {
-                const tanggalSalur = new Date().toISOString().split('T')[0];
-                for (let id of ids) {
-                    await apiUpdate('fitrah', id, { 
-                        status: 'sudah disalurkan', 
-                        tanggalSalur
+                for (let u of updates) {
+                    const tanggalSalur = u.newStatus === 'sudah disalurkan' ? new Date().toISOString().split('T')[0] : '';
+                    // Saat menyalurkan, penerima dikosongkan (bisa diisi manual nanti)
+                    await apiUpdate('fitrah', u.id, { 
+                        status: u.newStatus,
+                        tanggalSalur: tanggalSalur,
+                        id_mustahik: '',
+                        penerima_manual: ''
                     });
                 }
-                alert('Data berhasil disimpan.');
+                massalModalInstance.hide();
                 await refreshData();
+                alert('Status berhasil diperbarui.');
             } catch (error) {
-                alert('Gagal menyimpan: ' + error);
-            } finally {
-                originalBtn.disabled = false;
-                originalBtn.innerHTML = '<i class="bi bi-save"></i> Simpan Penyaluran';
+                alert('Gagal memperbarui beberapa data: ' + error);
             }
         }
 
         // ====================== INIT ======================
         document.addEventListener('DOMContentLoaded', async function() {
+            // Cek status sidebar tersimpan
             const sidebar = document.getElementById('sidebar');
             const icon = document.getElementById('toggleIcon');
             const isMinimized = localStorage.getItem('sidebarMinimized') === 'true';
@@ -1179,6 +1063,8 @@
 
             const overlay = document.getElementById('loading-overlay');
             const neededEndpoints = ['fitrah', 'mustahik', 'settings'];
+
+            // Cek apakah data yang diperlukan sudah ada di cache
             const needLoad = neededEndpoints.filter(ep => !LOADER.getData(ep).length);
             if (needLoad.length > 0) {
                 overlay.style.display = 'flex';
@@ -1196,10 +1082,13 @@
 
             modalInstance = new bootstrap.Modal(document.getElementById('formModal'));
             salurkanModalInstance = new bootstrap.Modal(document.getElementById('salurkanModal'));
+            massalModalInstance = new bootstrap.Modal(document.getElementById('massalModal'));
 
             loadSettingsFromCache();
             loadMustahikFromCache();
             loadDataFromCache();
+
+            // Inisialisasi tombol undo/redo
             updateUndoRedoButtons();
         });
     </script>
