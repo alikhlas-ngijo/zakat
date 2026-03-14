@@ -488,7 +488,7 @@
         }
 
         function generateQRText(sesi) {
-            const baseUrl = window.location.origin + '/zakat/absen.html';
+            const baseUrl = window.location.origin + '/absen.html';
             return `${baseUrl}?sesi_id=${encodeURIComponent(sesi.id)}&token=${encodeURIComponent(sesi.password || '')}`;
         }
 
