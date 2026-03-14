@@ -11,33 +11,214 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="../css/style.css">
     <style>
-        .stat-card {
-            border-radius: 15px;
-            transition: transform 0.3s, box-shadow 0.3s;
+        /* ===== VARIABEL & RESET ===== */
+        :root {
+            --primary: #2e7d32;
+            --primary-light: #4caf50;
+            --primary-soft: #e8f5e9;
+            --secondary: #ffb300;
+            --danger: #d32f2f;
+            --gray-bg: #f4f6f9;
+            --text-dark: #1e2a3a;
+            --text-muted: #6c757d;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --transition: all 0.2s ease;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--gray-bg);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            background: var(--primary);
+            color: white;
+            transition: width 0.3s ease, transform 0.3s ease;
+            z-index: 1050;
+            overflow-y: auto;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.1);
+        }
+        .sidebar.minimized {
+            width: 80px;
+        }
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .sidebar-header h4 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .sidebar.minimized .sidebar-header h4 {
+            display: none;
+        }
+        .sidebar.minimized .sidebar-header {
+            justify-content: center;
+            padding: 1rem 0;
+        }
+        .sidebar-toggle-btn {
+            background: transparent;
             border: none;
-            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+            color: white;
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 0 5px;
+            line-height: 1;
+        }
+        .btn-close-white {
+            filter: brightness(0) invert(1);
+        }
+        .sidebar .nav {
+            padding: 1rem 0;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.85);
+            padding: 12px 20px;
+            border-radius: 0;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            white-space: nowrap;
+        }
+        .sidebar .nav-link i {
+            width: 24px;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+        .sidebar .nav-link span {
+            transition: opacity 0.2s;
+        }
+        .sidebar.minimized .nav-link span {
+            display: none;
+        }
+        .sidebar.minimized .nav-link i {
+            margin-right: 0;
+            font-size: 1.5rem;
+            width: 100%;
+        }
+        .sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .sidebar .nav-link.active {
+            background: white;
+            color: var(--primary);
+            font-weight: 600;
+            border-left: 4px solid var(--secondary);
+        }
+        .sidebar .nav-link.active i {
+            color: var(--primary);
+        }
+        .sidebar .nav-link.text-danger {
+            color: #ffb3b3 !important;
+        }
+        .sidebar .nav-link.text-danger:hover {
+            background: rgba(255,255,255,0.1);
+            color: #ff8a8a !important;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+            background: var(--gray-bg);
+        }
+        .sidebar.minimized + .main-content {
+            margin-left: 80px;
+        }
+        .navbar-mobile {
+            display: none;
+            background: white;
+            padding: 12px 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            align-items: center;
+            gap: 15px;
+        }
+        .navbar-mobile h5 {
+            margin: 0;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        .container-fluid {
+            padding: 20px 30px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 991.98px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 260px !important;
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            .sidebar.minimized .sidebar-header h4,
+            .sidebar.minimized .nav-link span {
+                display: inline-block;
+            }
+            .sidebar.minimized .nav-link i {
+                font-size: 1.2rem;
+                width: 24px;
+                text-align: left;
+            }
+            .main-content {
+                margin-left: 0 !important;
+            }
+            .navbar-mobile {
+                display: flex;
+            }
+            .container-fluid {
+                padding: 15px;
+            }
+        }
+
+        /* ===== KOMPONEN DASHBOARD ===== */
+        .stat-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            border: 1px solid rgba(0,0,0,0.02);
         }
         .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,100,0,0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(46, 125, 50, 0.15);
         }
         .stat-icon {
             font-size: 2.5rem;
-            color: #28a745;
+            color: var(--primary-light);
+            opacity: 0.8;
         }
         .stat-title {
             font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            color: #6c757d;
+            color: var(--text-muted);
         }
         .stat-value {
             font-size: 2rem;
             font-weight: 700;
-            color: #2e7d32;
+            color: var(--primary);
         }
         .chart-container {
             position: relative;
@@ -48,284 +229,377 @@
         .recent-table {
             font-size: 0.9rem;
         }
-        .recent-table td, .recent-table th {
-            padding: 0.75rem 0.5rem;
-        }
         .badge-status {
-            font-size: 0.8rem;
-            padding: 0.4rem 0.6rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
             border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .badge-status.sudah {
+            background: #e6f7e6;
+            color: #1e7e34;
+        }
+        .badge-status.belum {
+            background: #fff3cd;
+            color: #856404;
+        }
+        /* Loading Overlay */
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,20,0,0.8);
+            backdrop-filter: blur(5px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+        }
+        #loading-overlay .spinner-border {
+            width: 4rem;
+            height: 4rem;
+            border-width: 0.3rem;
         }
     </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-dark bg-success fixed-top shadow">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#"><i class="bi bi-building"></i> Admin Masjid Al-Ikhlas</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-        </div>
-    </nav>
-
-    <!-- Sidebar Offcanvas -->
-    <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title">Menu Admin</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-        </div>
-        <div class="offcanvas-body">
-            <ul class="nav flex-column">
-                <li class="nav-item"><a class="nav-link active" href="dashboard.html"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" href="/zakat/admin/fitrah.html"><i class="bi bi-archive"></i> Zakat Fitrah</a></li>
-                <li class="nav-item"><a class="nav-link" href="/zakat/admin/mal.html"><i class="bi bi-cash-stack"></i> Zakat Mal</a></li>
-                <li class="nav-item"><a class="nav-link" href="/zakat/admin/pezakat.html"><i class="bi bi-people"></i> Data Pezakat</a></li>
-                <li class="nav-item"><a class="nav-link" href="/zakat/admin/mustahik.html"><i class="bi bi-hand-index-thumb"></i> Data Mustahik</a></li>
-                <li class="nav-item"><a class="nav-link" href="/zakat/admin/lokasi.html"><i class="bi bi-geo-alt"></i> Lokasi Izin</a></li>
-                <li class="nav-item"><a class="nav-link" href="/zakat/admin/sesi.html"><i class="bi bi-calendar-check"></i> Sesi Absensi</a></li>
-                <li class="nav-item"><a class="nav-link" href="/zakat/admin/laporan.html"><i class="bi bi-file-text"></i> Laporan</a></li>
-                <li class="nav-item"><a class="nav-link" href="/zakat/admin/settings.html"><i class="bi bi-gear"></i> Pengaturan</a></li>
-                <li class="nav-item"><a class="nav-link text-danger" href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
-            </ul>
-        </div>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="spinner-border text-light" role="status"></div>
+        <div id="loading-progress" class="mt-3 h4">0%</div>
+        <div id="loading-message" class="mt-2">Memuat data...</div>
     </div>
 
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="bi bi-building"></i> Admin Masjid</h4>
+            <button class="sidebar-toggle-btn d-none d-lg-block" onclick="toggleSidebarMinimize()" id="sidebarToggleBtn">
+                <i class="bi bi-arrow-left-circle" id="toggleIcon"></i>
+            </button>
+            <button class="btn-close btn-close-white d-lg-none" onclick="toggleSidebar()"></button>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link active" href="dashboard.html"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="fitrah.html"><i class="bi bi-archive"></i> <span>Zakat Fitrah</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="mal.html"><i class="bi bi-cash-stack"></i> <span>Zakat Mal</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="fidyah.html"><i class="bi bi-heart"></i> <span>Zakat Fidyah</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="pezakat.html"><i class="bi bi-people"></i> <span>Data Pezakat</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="mustahik.html"><i class="bi bi-hand-index-thumb"></i> <span>Data Mustahik</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="kategori_mustahik.html"><i class="bi bi-tags"></i> <span>Kategori Mustahik</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="lokasi.html"><i class="bi bi-geo-alt"></i> <span>Lokasi Izin</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="sesi.html"><i class="bi bi-calendar-check"></i> <span>Sesi Absensi</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="laporan.html"><i class="bi bi-file-text"></i> <span>Laporan</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="rekap-keuangan.html"><i class="bi bi-pie-chart"></i> <span>Rekap Zakat</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="settings.html"><i class="bi bi-gear"></i> <span>Pengaturan</span></a></li>
+            <!-- Menu Beranda (kembali ke index) -->
+    <li class="nav-item"><a class="nav-link" href="../index.html"><i class="bi bi-house-door"></i> <span>Beranda</span></a></li>
+            <li class="nav-item"><a class="nav-link text-danger" href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> <span>Logout</span></a></li>
+        </ul>
+    </aside>
+
     <!-- Main Content -->
-    <main class="container mt-5 pt-5">
-        <h2 class="text-success mb-4"><i class="bi bi-speedometer2"></i> Dashboard</h2>
+    <main class="main-content" id="mainContent">
+        <nav class="navbar-mobile">
+            <button class="btn btn-success" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+            <h5>Dashboard</h5>
+        </nav>
 
-        <!-- Dashboard Content (tampil langsung, tanpa spinner) -->
-        <div id="dashboardContent">
-            <!-- Row 1: Zakat Fitrah -->
-            <h4 class="mt-3"><i class="bi bi-archive text-success"></i> Zakat Fitrah</h4>
-            <div class="row g-3 mb-4">
-                <div class="col-md-3">
-                    <div class="card stat-card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="stat-title">Total Muzaki</div>
-                                    <div class="stat-value" id="totalMuzakiFitrah">0</div>
-                                </div>
-                                <i class="bi bi-people-fill stat-icon"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card stat-card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="stat-title">Total Jiwa</div>
-                                    <div class="stat-value" id="totalJiwa">0</div>
-                                </div>
-                                <i class="bi bi-person-hearts stat-icon"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card stat-card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="stat-title">Total Beras (kg)</div>
-                                    <div class="stat-value" id="totalBeras">0</div>
-                                </div>
-                                <i class="bi bi-basket2-fill stat-icon"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card stat-card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="stat-title">Total Uang (Rp)</div>
-                                    <div class="stat-value" id="totalUangFitrah">0</div>
-                                </div>
-                                <i class="bi bi-cash-stack stat-icon"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="container-fluid">
+            <h2 class="text-success mb-4"><i class="bi bi-speedometer2"></i> Dashboard Admin</h2>
 
-            <!-- Row 2: Zakat Mal & Mustahik -->
-            <div class="row g-3 mb-4">
-                <div class="col-md-4">
-                    <div class="card stat-card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="stat-title">Zakat Mal - Muzaki</div>
-                                    <div class="stat-value" id="totalMuzakiMal">0</div>
+            <!-- Dashboard Content -->
+            <div id="dashboardContent">
+                <!-- Baris 1: Statistik Utama -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="stat-title">Pezakat</div>
+                                        <div class="stat-value" id="totalPezakat">0</div>
+                                    </div>
+                                    <i class="bi bi-people-fill stat-icon"></i>
                                 </div>
-                                <i class="bi bi-briefcase-fill stat-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="stat-title">Total Mustahik</div>
+                                        <div class="stat-value" id="totalMustahik">0</div>
+                                    </div>
+                                    <i class="bi bi-person-raised-hand stat-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="stat-title">Beras Masuk (kg)</div>
+                                        <div class="stat-value" id="totalBerasMasuk">0</div>
+                                    </div>
+                                    <i class="bi bi-basket2-fill stat-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="stat-title">Beras Keluar (kg)</div>
+                                        <div class="stat-value" id="totalBerasKeluar">0</div>
+                                    </div>
+                                    <i class="bi bi-cash-stack stat-icon"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card stat-card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="stat-title">Zakat Mal - Nominal</div>
-                                    <div class="stat-value" id="totalNominalMal">Rp 0</div>
-                                </div>
-                                <i class="bi bi-cash-coin stat-icon"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card stat-card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="stat-title">Total Mustahik</div>
-                                    <div class="stat-value" id="totalMustahik">0</div>
-                                </div>
-                                <i class="bi bi-person-raised-hand stat-icon"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Row 3: Lokasi & Sesi & Absensi -->
-            <div class="row g-3 mb-4">
-                <div class="col-md-3">
-                    <div class="card stat-card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="stat-title">Lokasi Izin</div>
-                                    <div class="stat-value" id="totalLokasi">0</div>
+                <!-- Baris 2: Distribusi Fitrah Tersalurkan -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="stat-title">Beras Tersalurkan (kg)</div>
+                                        <div class="stat-value" id="berasTersalurkan">0</div>
+                                    </div>
+                                    <i class="bi bi-basket-fill stat-icon"></i>
                                 </div>
-                                <i class="bi bi-geo-alt-fill stat-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="stat-title">Uang Tersalurkan (Rp)</div>
+                                        <div class="stat-value" id="uangTersalurkan">Rp 0</div>
+                                    </div>
+                                    <i class="bi bi-cash-coin stat-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="stat-title">Jumlah Penyaluran</div>
+                                        <div class="stat-value" id="jumlahPenyaluran">0</div>
+                                    </div>
+                                    <i class="bi bi-box-seam stat-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="stat-title">Persentase Penyaluran</div>
+                                        <div class="stat-value" id="persentasePenyaluran">0%</div>
+                                    </div>
+                                    <i class="bi bi-pie-chart-fill stat-icon"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card stat-card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="stat-title">Sesi Aktif</div>
-                                    <div class="stat-value" id="totalSesiAktif">0</div>
-                                </div>
-                                <i class="bi bi-calendar-check-fill stat-icon"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card stat-card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="stat-title">Absen Hari Ini</div>
-                                    <div class="stat-value" id="absenHariIni">0</div>
-                                </div>
-                                <i class="bi bi-clock-history stat-icon"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card stat-card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="stat-title">Total Absensi</div>
-                                    <div class="stat-value" id="totalAbsensi">0</div>
-                                </div>
-                                <i class="bi bi-fingerprint stat-icon"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Row 4: Chart dan Recent Activities -->
-            <div class="row g-4">
-                <!-- Chart Mustahik per Kategori -->
-                <div class="col-md-6">
-                    <div class="card shadow">
-                        <div class="card-header bg-success text-white">
-                            <i class="bi bi-pie-chart-fill"></i> Mustahik per Kategori
+                <!-- Baris 3: Statistik Tambahan -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="stat-title">Mustahik Menerima Fitrah</div>
+                                        <div class="stat-value" id="mustahikMenerimaFitrah">0</div>
+                                    </div>
+                                    <i class="bi bi-person-check-fill stat-icon"></i>
+                                </div>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <div class="chart-container">
-                                <canvas id="chartKategoriMustahik"></canvas>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="stat-title">Zakat Mal - Muzaki</div>
+                                        <div class="stat-value" id="totalMuzakiMal">0</div>
+                                    </div>
+                                    <i class="bi bi-briefcase-fill stat-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="stat-title">Zakat Mal - Nominal</div>
+                                        <div class="stat-value" id="totalNominalMal">Rp 0</div>
+                                    </div>
+                                    <i class="bi bi-cash-coin stat-icon"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- Chart Absensi per Sesi (7 hari terakhir) -->
-                <div class="col-md-6">
-                    <div class="card shadow">
-                        <div class="card-header bg-success text-white">
-                            <i class="bi bi-bar-chart-fill"></i> Absensi 7 Hari Terakhir
-                        </div>
-                        <div class="card-body">
-                            <div class="chart-container">
-                                <canvas id="chartAbsensi"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Recent Tables -->
-            <div class="row g-4 mt-2">
-                <div class="col-md-6">
-                    <div class="card shadow">
-                        <div class="card-header bg-success text-white">
-                            <i class="bi bi-clock"></i> Absensi Terbaru
+                <!-- Baris 4: Lokasi, Sesi, Absensi -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="stat-title">Lokasi Izin</div>
+                                        <div class="stat-value" id="totalLokasi">0</div>
+                                    </div>
+                                    <i class="bi bi-geo-alt-fill stat-icon"></i>
+                                </div>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <table class="table table-sm table-hover recent-table">
-                                <thead>
-                                    <tr>
-                                        <th>Petugas</th>
-                                        <th>Sesi</th>
-                                        <th>Waktu</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="recentAbsensi">
-                                    <tr><td colspan="4" class="text-center">Memuat...</td></tr>
-                                </tbody>
-                            </table>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="stat-title">Sesi Aktif</div>
+                                        <div class="stat-value" id="totalSesiAktif">0</div>
+                                    </div>
+                                    <i class="bi bi-calendar-check-fill stat-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="stat-title">Absen Hari Ini</div>
+                                        <div class="stat-value" id="absenHariIni">0</div>
+                                    </div>
+                                    <i class="bi bi-clock-history stat-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="stat-title">Total Absensi</div>
+                                        <div class="stat-value" id="totalAbsensi">0</div>
+                                    </div>
+                                    <i class="bi bi-fingerprint stat-icon"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="card shadow">
-                        <div class="card-header bg-success text-white">
-                            <i class="bi bi-cash"></i> Penyaluran Fitrah Terbaru
+
+                <!-- Baris 5: Chart -->
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card shadow">
+                            <div class="card-header bg-success text-white">
+                                <i class="bi bi-pie-chart-fill"></i> Mustahik per Kategori
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="chartKategoriMustahik"></canvas>
+                                </div>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <table class="table table-sm table-hover recent-table">
-                                <thead>
-                                    <tr>
-                                        <th>Nama</th>
-                                        <th>Beras</th>
-                                        <th>Uang</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="recentFitrah">
-                                    <tr><td colspan="4" class="text-center">Memuat...</td></tr>
-                                </tbody>
-                            </table>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card shadow">
+                            <div class="card-header bg-success text-white">
+                                <i class="bi bi-bar-chart-fill"></i> Absensi 7 Hari Terakhir
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="chartAbsensi"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Tables -->
+                <div class="row g-4 mt-2">
+                    <div class="col-md-6">
+                        <div class="card shadow">
+                            <div class="card-header bg-success text-white">
+                                <i class="bi bi-clock"></i> Absensi Terbaru
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-sm table-hover recent-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Petugas</th>
+                                            <th>Sesi</th>
+                                            <th>Waktu</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentAbsensi">
+                                        <tr><td colspan="4" class="text-center">Memuat...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card shadow">
+                            <div class="card-header bg-success text-white">
+                                <i class="bi bi-cash"></i> Penyaluran Fitrah Terbaru
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-sm table-hover recent-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nama</th>
+                                            <th>Beras (kg)</th>
+                                            <th>Uang (Rp)</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentFitrah">
+                                        <tr><td colspan="4" class="text-center">Memuat...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -336,20 +610,26 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../js/config.js"></script>
     <script src="../js/api.js"></script>
+    <script src="../js/loader.js"></script>
     <script>
-        // ====================== FUNGSI CACHE ======================
-        function getCachedData(endpoint) {
-            const cached = sessionStorage.getItem('cache_' + endpoint);
-            if (!cached) return null;
-            try {
-                return JSON.parse(cached);
-            } catch (e) {
-                return null;
-            }
+        // ====================== FUNGSI SIDEBAR ======================
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
         }
 
-        function setCachedData(endpoint, data) {
-            sessionStorage.setItem('cache_' + endpoint, JSON.stringify(data));
+        function toggleSidebarMinimize() {
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('toggleIcon');
+            sidebar.classList.toggle('minimized');
+            const isMinimized = sidebar.classList.contains('minimized');
+            if (isMinimized) {
+                icon.classList.remove('bi-arrow-left-circle');
+                icon.classList.add('bi-arrow-right-circle');
+            } else {
+                icon.classList.remove('bi-arrow-right-circle');
+                icon.classList.add('bi-arrow-left-circle');
+            }
+            localStorage.setItem('sidebarMinimized', isMinimized);
         }
 
         // ====================== CEK LOGIN ======================
@@ -365,65 +645,83 @@
 
         // ====================== GLOBAL ======================
         let fitrahData = [], malData = [], mustahikData = [], lokasiData = [], sesiData = [], absenData = [], kategoriList = [];
+        let pezakatData = [], settingsData = {};
+
         let kategoriMustahikMap = {};
         let sesiMap = {};
         let chartKategori, chartAbsensi;
 
         // ====================== UPDATE UI ======================
         function updateUI() {
-            // Update stats
             updateStats();
-            // Update recent tables
+            updateDistribusi();
             renderRecentTables();
-            // Update charts (jika sudah ada chart, update data)
             renderCharts();
         }
 
         // ====================== UPDATE STATISTICS ======================
         function updateStats() {
-            // Fitrah
-            const totalMuzakiFitrah = fitrahData.length;
-            const totalJiwa = fitrahData.reduce((sum, item) => sum + (Number(item.jiwa) || 0), 0);
-            const totalBeras = fitrahData.reduce((sum, item) => sum + (Number(item.beras) || 0), 0);
-            const totalUangFitrah = fitrahData.reduce((sum, item) => sum + (Number(item.uang) || 0), 0);
-            document.getElementById('totalMuzakiFitrah').innerText = totalMuzakiFitrah;
-            document.getElementById('totalJiwa').innerText = totalJiwa;
-            document.getElementById('totalBeras').innerText = totalBeras.toFixed(1);
-            document.getElementById('totalUangFitrah').innerText = 'Rp ' + totalUangFitrah.toLocaleString('id-ID');
+            const totalPezakat = pezakatData.length;
+            const totalMustahik = mustahikData.length;
+            const berasPerJiwa = Number(settingsData.beras_per_jiwa) || 2.5;
+            const totalBerasMasuk = totalPezakat * berasPerJiwa;
+            const totalBerasKeluar = fitrahData.reduce((sum, item) => sum + (Number(item.beras) || 0), 0);
 
-            // Mal
+            const mustahikPenerimaSet = new Set();
+            fitrahData.forEach(f => {
+                if (f.id_mustahik && f.id_mustahik.trim() !== '') {
+                    mustahikPenerimaSet.add(f.id_mustahik);
+                }
+            });
+            const mustahikMenerimaFitrah = mustahikPenerimaSet.size;
+
             const totalMuzakiMal = malData.length;
             const totalNominalMal = malData.reduce((sum, item) => sum + (Number(item.nominal) || 0), 0);
-            document.getElementById('totalMuzakiMal').innerText = totalMuzakiMal;
-            document.getElementById('totalNominalMal').innerText = 'Rp ' + totalNominalMal.toLocaleString('id-ID');
 
-            // Mustahik
-            document.getElementById('totalMustahik').innerText = mustahikData.length;
-
-            // Lokasi
-            document.getElementById('totalLokasi').innerText = lokasiData.length;
-
-            // Sesi Aktif
+            const totalLokasi = lokasiData.length;
             const now = new Date();
             const sesiAktif = sesiData.filter(s => {
                 if (!s.aktif || s.aktif === 'false') return false;
                 const mulai = new Date(s.waktu_mulai);
                 const selesai = new Date(s.waktu_selesai);
                 return now >= mulai && now <= selesai;
-            });
-            document.getElementById('totalSesiAktif').innerText = sesiAktif.length;
-
-            // Absensi
+            }).length;
             const totalAbsensi = absenData.length;
             const today = new Date().toISOString().split('T')[0];
             const absenHariIni = absenData.filter(a => a.waktu_absen && a.waktu_absen.startsWith(today)).length;
+
+            document.getElementById('totalPezakat').innerText = totalPezakat;
+            document.getElementById('totalMustahik').innerText = totalMustahik;
+            document.getElementById('totalBerasMasuk').innerText = totalBerasMasuk.toFixed(1);
+            document.getElementById('totalBerasKeluar').innerText = totalBerasKeluar.toFixed(1);
+            document.getElementById('mustahikMenerimaFitrah').innerText = mustahikMenerimaFitrah;
+            document.getElementById('totalMuzakiMal').innerText = totalMuzakiMal;
+            document.getElementById('totalNominalMal').innerText = 'Rp ' + totalNominalMal.toLocaleString('id-ID');
+            document.getElementById('totalLokasi').innerText = totalLokasi;
+            document.getElementById('totalSesiAktif').innerText = sesiAktif;
             document.getElementById('totalAbsensi').innerText = totalAbsensi;
             document.getElementById('absenHariIni').innerText = absenHariIni;
         }
 
+        // ====================== UPDATE DISTRIBUSI FITRAH ======================
+        function updateDistribusi() {
+            const berasPerJiwa = Number(settingsData.beras_per_jiwa) || 2.5;
+            const totalBerasMasuk = pezakatData.length * berasPerJiwa;
+
+            const fitrahTersalurkan = fitrahData.filter(f => f.status === 'sudah disalurkan');
+            const berasTersalurkan = fitrahTersalurkan.reduce((sum, f) => sum + (Number(f.beras) || 0), 0);
+            const uangTersalurkan = fitrahTersalurkan.reduce((sum, f) => sum + (Number(f.uang) || 0), 0);
+            const jumlahPenyaluran = fitrahTersalurkan.length;
+            const persentase = totalBerasMasuk > 0 ? ((berasTersalurkan / totalBerasMasuk) * 100).toFixed(1) : 0;
+
+            document.getElementById('berasTersalurkan').innerText = berasTersalurkan.toFixed(1);
+            document.getElementById('uangTersalurkan').innerText = 'Rp ' + uangTersalurkan.toLocaleString('id-ID');
+            document.getElementById('jumlahPenyaluran').innerText = jumlahPenyaluran;
+            document.getElementById('persentasePenyaluran').innerText = persentase + '%';
+        }
+
         // ====================== RENDER RECENT TABLES ======================
         function renderRecentTables() {
-            // Recent Absensi (last 5)
             const sortedAbsen = [...absenData].sort((a,b) => (b.waktu_absen || '').localeCompare(a.waktu_absen || '')).slice(0,5);
             const tbodyAbsen = document.getElementById('recentAbsensi');
             if (sortedAbsen.length === 0) {
@@ -434,31 +732,32 @@
                         <td>${a.nama_petugas || '-'}</td>
                         <td>${sesiMap[a.id_sesi] || a.id_sesi}</td>
                         <td>${a.waktu_absen ? new Date(a.waktu_absen).toLocaleString('id-ID') : '-'}</td>
-                        <td><span class="badge badge-status bg-success">${a.status || 'hadir'}</span></td>
+                        <td><span class="badge-status sudah">${a.status || 'hadir'}</span></td>
                     </tr>
                 `).join('');
             }
 
-            // Recent Fitrah (last 5 by tanggal)
             const sortedFitrah = [...fitrahData].sort((a,b) => (b.tanggal || '').localeCompare(a.tanggal || '')).slice(0,5);
             const tbodyFitrah = document.getElementById('recentFitrah');
             if (sortedFitrah.length === 0) {
                 tbodyFitrah.innerHTML = '<tr><td colspan="4" class="text-center">Belum ada data</td></tr>';
             } else {
-                tbodyFitrah.innerHTML = sortedFitrah.map(f => `
+                tbodyFitrah.innerHTML = sortedFitrah.map(f => {
+                    const status = f.status || 'belum disalurkan';
+                    const badgeClass = status === 'sudah disalurkan' ? 'badge-status sudah' : 'badge-status belum';
+                    return `
                     <tr>
                         <td>${f.nama || '-'}</td>
                         <td>${f.beras || 0} kg</td>
                         <td>Rp ${(f.uang || 0).toLocaleString('id-ID')}</td>
-                        <td><span class="badge badge-status ${f.status === 'sudah disalurkan' ? 'bg-success' : 'bg-warning'}">${f.status || 'belum'}</span></td>
+                        <td><span class="${badgeClass}">${status}</span></td>
                     </tr>
-                `).join('');
+                `}).join('');
             }
         }
 
         // ====================== RENDER CHARTS ======================
         function renderCharts() {
-            // Chart Mustahik per Kategori
             const kategoriCount = {};
             mustahikData.forEach(m => {
                 const cat = m.id_kategori || 'unknown';
@@ -492,7 +791,6 @@
                 }
             });
 
-            // Chart Absensi 7 hari terakhir
             const last7Days = [];
             const absenPerDay = {};
             for (let i = 6; i >= 0; i--) {
@@ -541,79 +839,65 @@
             });
         }
 
-        // ====================== LOAD DATA (dengan cache) ======================
-        async function loadAllData() {
-            // Coba muat dari cache dulu
-            fitrahData = getCachedData('fitrah') || [];
-            malData = getCachedData('mal') || [];
-            mustahikData = getCachedData('mustahik') || [];
-            lokasiData = getCachedData('lokasi_izin') || [];
-            sesiData = getCachedData('sesi_absen') || [];
-            absenData = getCachedData('absen_petugas') || [];
-            kategoriList = getCachedData('kategori_mustahik') || [];
-
-            // Update maps dari data cache
-            updateMaps();
-
-            // Update UI dengan data cache
-            updateUI();
-
-            // Sekarang ambil data terbaru dari server
-            try {
-                const [newFitrah, newMal, newMustahik, newLokasi, newSesi, newAbsen, newKategori] = await Promise.all([
-                    apiGet('fitrah'),
-                    apiGet('mal'),
-                    apiGet('mustahik'),
-                    apiGet('lokasi_izin'),
-                    apiGet('sesi_absen'),
-                    apiGet('absen_petugas'),
-                    apiGet('kategori_mustahik')
-                ]);
-
-                // Simpan ke cache
-                setCachedData('fitrah', newFitrah);
-                setCachedData('mal', newMal);
-                setCachedData('mustahik', newMustahik);
-                setCachedData('lokasi_izin', newLokasi);
-                setCachedData('sesi_absen', newSesi);
-                setCachedData('absen_petugas', newAbsen);
-                setCachedData('kategori_mustahik', newKategori);
-
-                // Update data global
-                fitrahData = newFitrah;
-                malData = newMal;
-                mustahikData = newMustahik;
-                lokasiData = newLokasi;
-                sesiData = newSesi;
-                absenData = newAbsen;
-                kategoriList = newKategori;
-
-                // Update maps dan UI
-                updateMaps();
-                updateUI();
-
-            } catch (error) {
-                console.error('Gagal memuat data terbaru:', error);
-                // Jika tidak ada cache sama sekali, tampilkan pesan error di tabel
-                if (!fitrahData.length && !malData.length) {
-                    document.getElementById('recentAbsensi').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Gagal memuat data. Periksa koneksi.</td></tr>';
-                    document.getElementById('recentFitrah').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Gagal memuat data.</td></tr>';
-                }
-            }
-        }
-
+        // ====================== UPDATE MAPS ======================
         function updateMaps() {
-            // Map kategori
             kategoriMustahikMap = {};
             kategoriList.forEach(k => kategoriMustahikMap[k.id] = `${k.kode} - ${k.deskripsi}`);
-
-            // Map sesi
             sesiMap = {};
             sesiData.forEach(s => sesiMap[s.id] = s.nama_sesi);
         }
 
+        // ====================== LOAD DATA DARI CACHE ======================
+        function loadDataFromCache() {
+            fitrahData = LOADER.getData('fitrah');
+            malData = LOADER.getData('mal');
+            mustahikData = LOADER.getData('mustahik');
+            lokasiData = LOADER.getData('lokasi_izin');
+            sesiData = LOADER.getData('sesi_absen');
+            absenData = LOADER.getData('absen_petugas');
+            kategoriList = LOADER.getData('kategori_mustahik');
+            pezakatData = LOADER.getData('pezakat');
+            const settingsArray = LOADER.getData('settings');
+            settingsData = settingsArray.length > 0 ? settingsArray[0] : {};
+
+            updateMaps();
+            updateUI();
+        }
+
         // ====================== INIT ======================
-        document.addEventListener('DOMContentLoaded', loadAllData);
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Cek status sidebar tersimpan
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('toggleIcon');
+            const isMinimized = localStorage.getItem('sidebarMinimized') === 'true';
+            if (isMinimized) {
+                sidebar.classList.add('minimized');
+                if (icon) {
+                    icon.classList.remove('bi-arrow-left-circle');
+                    icon.classList.add('bi-arrow-right-circle');
+                }
+            }
+
+            const overlay = document.getElementById('loading-overlay');
+
+            if (!LOADER.isAllDataLoaded()) {
+                overlay.style.display = 'flex';
+                try {
+                    await LOADER.loadAllData(false, (progress, message) => {
+                        document.getElementById('loading-progress').innerText = progress + '%';
+                        document.getElementById('loading-message').innerText = message;
+                    });
+                } catch (e) {
+                    console.error('Gagal memuat data:', e);
+                    document.getElementById('recentAbsensi').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Gagal memuat data. Periksa koneksi.</td></tr>';
+                    document.getElementById('recentFitrah').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Gagal memuat data.</td></tr>';
+                } finally {
+                    overlay.style.display = 'none';
+                }
+            }
+
+            loadDataFromCache();
+        });
     </script>
 </body>
 </html>

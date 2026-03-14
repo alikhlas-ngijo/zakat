@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Kategori Mustahik</title>
+    <!-- Bootstrap 5 + Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <style>
+        /* ===== VARIABEL & RESET ===== */
+        :root {
+            --primary: #2e7d32;
+            --primary-light: #4caf50;
+            --primary-soft: #e8f5e9;
+            --secondary: #ffb300;
+            --danger: #d32f2f;
+            --gray-bg: #f4f6f9;
+            --text-dark: #1e2a3a;
+            --text-muted: #6c757d;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --transition: all 0.2s ease;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--gray-bg);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            background: var(--primary);
+            color: white;
+            transition: width 0.3s ease, transform 0.3s ease;
+            z-index: 1050;
+            overflow-y: auto;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.1);
+        }
+        .sidebar.minimized {
+            width: 80px;
+        }
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .sidebar-header h4 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .sidebar.minimized .sidebar-header h4 {
+            display: none;
+        }
+        .sidebar.minimized .sidebar-header {
+            justify-content: center;
+            padding: 1rem 0;
+        }
+        .sidebar-toggle-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 0 5px;
+            line-height: 1;
+        }
+        .btn-close-white {
+            filter: brightness(0) invert(1);
+        }
+        .sidebar .nav {
+            padding: 1rem 0;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.85);
+            padding: 12px 20px;
+            border-radius: 0;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            white-space: nowrap;
+        }
+        .sidebar .nav-link i {
+            width: 24px;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+        .sidebar .nav-link span {
+            transition: opacity 0.2s;
+        }
+        .sidebar.minimized .nav-link span {
+            display: none;
+        }
+        .sidebar.minimized .nav-link i {
+            margin-right: 0;
+            font-size: 1.5rem;
+            width: 100%;
+        }
+        .sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .sidebar .nav-link.active {
+            background: white;
+            color: var(--primary);
+            font-weight: 600;
+            border-left: 4px solid var(--secondary);
+        }
+        .sidebar .nav-link.active i {
+            color: var(--primary);
+        }
+        .sidebar .nav-link.text-danger {
+            color: #ffb3b3 !important;
+        }
+        .sidebar .nav-link.text-danger:hover {
+            background: rgba(255,255,255,0.1);
+            color: #ff8a8a !important;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+            background: var(--gray-bg);
+        }
+        .sidebar.minimized + .main-content {
+            margin-left: 80px;
+        }
+        .navbar-mobile {
+            display: none;
+            background: white;
+            padding: 12px 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            align-items: center;
+            gap: 15px;
+        }
+        .navbar-mobile h5 {
+            margin: 0;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        .container-fluid {
+            padding: 20px 30px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 991.98px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 260px !important;
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            .sidebar.minimized .sidebar-header h4,
+            .sidebar.minimized .nav-link span {
+                display: inline-block;
+            }
+            .sidebar.minimized .nav-link i {
+                font-size: 1.2rem;
+                width: 24px;
+                text-align: left;
+            }
+            .main-content {
+                margin-left: 0 !important;
+            }
+            .navbar-mobile {
+                display: flex;
+            }
+            .container-fluid {
+                padding: 15px;
+            }
+        }
+
+        /* ===== KHUSUS HALAMAN KATEGORI ===== */
+        .table-container {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--box-shadow);
+        }
+        .btn-action {
+            margin: 0 2px;
+        }
+        /* Loading Overlay */
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,20,0,0.8);
+            backdrop-filter: blur(5px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            transition: opacity 0.3s;
+        }
+        #loading-overlay .spinner-border {
+            width: 4rem;
+            height: 4rem;
+            border-width: 0.3rem;
+        }
+        /* Toast custom */
+        .toast-container {
+            z-index: 1060;
+        }
+        .toast {
+            background: white;
+            border-left: 4px solid var(--primary);
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="spinner-border text-light" role="status"></div>
+        <div id="loading-progress" class="mt-3 h4">0%</div>
+        <div id="loading-message" class="mt-2">Memuat data...</div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="bi bi-building"></i> Admin Masjid</h4>
+            <button class="sidebar-toggle-btn d-none d-lg-block" onclick="toggleSidebarMinimize()" id="sidebarToggleBtn">
+                <i class="bi bi-arrow-left-circle" id="toggleIcon"></i>
+            </button>
+            <button class="btn-close btn-close-white d-lg-none" onclick="toggleSidebar()"></button>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link" href="dashboard.html"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="fitrah.html"><i class="bi bi-archive"></i> <span>Zakat Fitrah</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="mal.html"><i class="bi bi-cash-stack"></i> <span>Zakat Mal</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="fidyah.html"><i class="bi bi-heart"></i> <span>Zakat Fidyah</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="pezakat.html"><i class="bi bi-people"></i> <span>Data Pezakat</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="mustahik.html"><i class="bi bi-hand-index-thumb"></i> <span>Data Mustahik</span></a></li>
+            <li class="nav-item"><a class="nav-link active" href="kategori_mustahik.html"><i class="bi bi-tags"></i> <span>Kategori Mustahik</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="lokasi.html"><i class="bi bi-geo-alt"></i> <span>Lokasi Izin</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="sesi.html"><i class="bi bi-calendar-check"></i> <span>Sesi Absensi</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="laporan.html"><i class="bi bi-file-text"></i> <span>Laporan</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="rekap-keuangan.html"><i class="bi bi-pie-chart"></i> <span>Rekap Zakat</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="settings.html"><i class="bi bi-gear"></i> <span>Pengaturan</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="../index.html"><i class="bi bi-house-door"></i> <span>Beranda</span></a></li>
+            <li class="nav-item"><a class="nav-link text-danger" href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> <span>Logout</span></a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <nav class="navbar-mobile">
+            <button class="btn btn-success" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+            <h5>Kategori Mustahik</h5>
+        </nav>
+
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-success"><i class="bi bi-tags"></i> Kategori Mustahik</h2>
+                <button class="btn btn-success" onclick="clearForm()" data-bs-toggle="modal" data-bs-target="#modalKategori">
+                    <i class="bi bi-plus-circle"></i> Tambah Kategori
+                </button>
+            </div>
+
+            <!-- Tabel Kategori -->
+            <div class="table-container">
+                <table id="tabelKategori" class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Kode</th>
+                            <th>Deskripsi</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <tr><td colspan="4" class="text-center">Memuat data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Form Kategori -->
+    <div class="modal fade" id="modalKategori" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="modalTitle">Tambah Kategori Mustahik</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formKategori">
+                        <input type="hidden" id="editId" value="">
+                        <div class="mb-3">
+                            <label for="kategoriId" class="form-label">ID Kategori</label>
+                            <input type="text" class="form-control" id="kategoriId" required placeholder="Contoh: K001">
+                            <div class="form-text">ID unik, gunakan kode seperti K001, K002, dst.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="kategoriKode" class="form-label">Kode</label>
+                            <input type="text" class="form-control" id="kategoriKode" required placeholder="Contoh: 1, 2, 3, ...">
+                        </div>
+                        <div class="mb-3">
+                            <label for="kategoriDeskripsi" class="form-label">Deskripsi</label>
+                            <textarea class="form-control" id="kategoriDeskripsi" rows="3" required placeholder="Deskripsi kategori..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-success" onclick="simpanKategori()">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/loader.js"></script>
+    <script>
+        // ====================== FUNGSI SIDEBAR ======================
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+        }
+
+        function toggleSidebarMinimize() {
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('toggleIcon');
+            sidebar.classList.toggle('minimized');
+            const isMinimized = sidebar.classList.contains('minimized');
+            if (isMinimized) {
+                icon.classList.remove('bi-arrow-left-circle');
+                icon.classList.add('bi-arrow-right-circle');
+            } else {
+                icon.classList.remove('bi-arrow-right-circle');
+                icon.classList.add('bi-arrow-left-circle');
+            }
+            localStorage.setItem('sidebarMinimized', isMinimized);
+        }
+
+        // ====================== CEK LOGIN ======================
+        let user = JSON.parse(localStorage.getItem('user'));
+        if (!user || user.role !== 'admin') {
+            window.location.href = '../login.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = '../login.html';
+        }
+
+        // ====================== GLOBAL ======================
+        let kategoriData = [];
+        let dataTable;
+
+        // ====================== LOAD DATA ======================
+        async function loadData() {
+            try {
+                // Tampilkan dari cache dulu jika ada
+                const cached = LOADER.getData('kategori_mustahik');
+                if (cached && cached.length > 0) {
+                    kategoriData = cached;
+                    renderTable();
+                } else {
+                    // Jika belum, paksa load dari API via loader
+                    await LOADER.loadAllData(true);
+                    kategoriData = LOADER.getData('kategori_mustahik');
+                    renderTable();
+                }
+            } catch (error) {
+                console.error('Gagal memuat data:', error);
+                document.getElementById('table-body').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Gagal memuat data. Periksa koneksi.</td></tr>';
+            }
+        }
+
+        // ====================== RENDER TABEL ======================
+        function renderTable() {
+            const tbody = document.getElementById('table-body');
+            if (kategoriData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">Tidak ada data</td></tr>';
+                if (dataTable) dataTable.destroy();
+                return;
+            }
+
+            let html = '';
+            kategoriData.forEach(item => {
+                html += `<tr>
+                    <td>${item.id || ''}</td>
+                    <td>${item.kode || ''}</td>
+                    <td>${item.deskripsi || ''}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-warning btn-action" onclick="editKategori('${item.id}')"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-outline-danger btn-action" onclick="hapusKategori('${item.id}')"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+
+            // Inisialisasi DataTables
+            if ($.fn.DataTable.isDataTable('#tabelKategori')) {
+                $('#tabelKategori').DataTable().destroy();
+            }
+            dataTable = $('#tabelKategori').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json'
+                },
+                columnDefs: [
+                    { orderable: false, targets: 3 }
+                ]
+            });
+        }
+
+        // ====================== FORM HANDLER ======================
+        function clearForm() {
+            document.getElementById('editId').value = '';
+            document.getElementById('kategoriId').value = '';
+            document.getElementById('kategoriKode').value = '';
+            document.getElementById('kategoriDeskripsi').value = '';
+            document.getElementById('modalTitle').innerText = 'Tambah Kategori Mustahik';
+            document.getElementById('kategoriId').disabled = false;
+        }
+
+        function editKategori(id) {
+            const item = kategoriData.find(k => k.id == id);
+            if (!item) return;
+
+            document.getElementById('editId').value = item.id;
+            document.getElementById('kategoriId').value = item.id;
+            document.getElementById('kategoriKode').value = item.kode || '';
+            document.getElementById('kategoriDeskripsi').value = item.deskripsi || '';
+            document.getElementById('modalTitle').innerText = 'Edit Kategori Mustahik';
+            document.getElementById('kategoriId').disabled = true;
+
+            const modal = new bootstrap.Modal(document.getElementById('modalKategori'));
+            modal.show();
+        }
+
+        // ====================== SIMPAN ======================
+        async function simpanKategori() {
+            const id = document.getElementById('kategoriId').value.trim();
+            const kode = document.getElementById('kategoriKode').value.trim();
+            const deskripsi = document.getElementById('kategoriDeskripsi').value.trim();
+            const editId = document.getElementById('editId').value;
+
+            if (!id || !kode || !deskripsi) {
+                alert('Semua field harus diisi!');
+                return;
+            }
+
+            // Jika tambah baru, cek apakah id sudah ada
+            if (!editId) {
+                const exists = kategoriData.some(k => k.id == id);
+                if (exists) {
+                    alert('ID sudah digunakan. Gunakan ID lain.');
+                    return;
+                }
+            }
+
+            const data = { id, kode, deskripsi };
+
+            try {
+                let response;
+                if (editId) {
+                    response = await apiEdit('kategori_mustahik', editId, data);
+                } else {
+                    response = await apiPost('kategori_mustahik', data);
+                }
+
+                if (response && response.success) {
+                    alert('Data berhasil disimpan.');
+                    bootstrap.Modal.getInstance(document.getElementById('modalKategori')).hide();
+                    await LOADER.loadAllData(true); // refresh cache
+                    kategoriData = LOADER.getData('kategori_mustahik');
+                    renderTable();
+                } else {
+                    alert('Gagal menyimpan: ' + (response.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error simpan:', error);
+                alert('Terjadi kesalahan: ' + error.message);
+            }
+        }
+
+        // ====================== HAPUS ======================
+        async function hapusKategori(id) {
+            if (!confirm('Yakin ingin menghapus kategori ini?')) return;
+
+            try {
+                const response = await apiDelete('kategori_mustahik', id);
+                if (response && response.success) {
+                    alert('Data berhasil dihapus.');
+                    await LOADER.loadAllData(true);
+                    kategoriData = LOADER.getData('kategori_mustahik');
+                    renderTable();
+                } else {
+                    alert('Gagal menghapus: ' + (response.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error hapus:', error);
+                alert('Terjadi kesalahan: ' + error.message);
+            }
+        }
+
+        // ====================== INIT ======================
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Cek status sidebar tersimpan
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('toggleIcon');
+            const isMinimized = localStorage.getItem('sidebarMinimized') === 'true';
+            if (isMinimized) {
+                sidebar.classList.add('minimized');
+                if (icon) {
+                    icon.classList.remove('bi-arrow-left-circle');
+                    icon.classList.add('bi-arrow-right-circle');
+                }
+            }
+
+            // Loading overlay
+            const overlay = document.getElementById('loading-overlay');
+            if (!LOADER.isAllDataLoaded()) {
+                overlay.style.display = 'flex';
+                try {
+                    await LOADER.loadAllData(false, (progress, message) => {
+                        document.getElementById('loading-progress').innerText = progress + '%';
+                        document.getElementById('loading-message').innerText = message;
+                    });
+                } catch (e) {
+                    console.error('Gagal memuat data:', e);
+                } finally {
+                    overlay.style.display = 'none';
+                }
+            }
+
+            loadData();
+        });
+    </script>
+</body>
+</html>

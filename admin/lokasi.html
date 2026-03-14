@@ -12,10 +12,186 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* ===== VARIABEL & RESET ===== */
+        :root {
+            --primary: #2e7d32;
+            --primary-light: #4caf50;
+            --primary-soft: #e8f5e9;
+            --secondary: #ffb300;
+            --danger: #d32f2f;
+            --gray-bg: #f4f6f9;
+            --text-dark: #1e2a3a;
+            --text-muted: #6c757d;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --transition: all 0.2s ease;
+        }
         body {
             font-family: 'Poppins', sans-serif;
-            background: #f4f7fc;
+            background-color: var(--gray-bg);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
         }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            background: var(--primary);
+            color: white;
+            transition: width 0.3s ease, transform 0.3s ease;
+            z-index: 1050;
+            overflow-y: auto;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.1);
+        }
+        .sidebar.minimized {
+            width: 80px;
+        }
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .sidebar-header h4 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .sidebar.minimized .sidebar-header h4 {
+            display: none;
+        }
+        .sidebar.minimized .sidebar-header {
+            justify-content: center;
+            padding: 1rem 0;
+        }
+        .sidebar-toggle-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 0 5px;
+            line-height: 1;
+        }
+        .btn-close-white {
+            filter: brightness(0) invert(1);
+        }
+        .sidebar .nav {
+            padding: 1rem 0;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.85);
+            padding: 12px 20px;
+            border-radius: 0;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            white-space: nowrap;
+        }
+        .sidebar .nav-link i {
+            width: 24px;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+        .sidebar .nav-link span {
+            transition: opacity 0.2s;
+        }
+        .sidebar.minimized .nav-link span {
+            display: none;
+        }
+        .sidebar.minimized .nav-link i {
+            margin-right: 0;
+            font-size: 1.5rem;
+            width: 100%;
+        }
+        .sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .sidebar .nav-link.active {
+            background: white;
+            color: var(--primary);
+            font-weight: 600;
+            border-left: 4px solid var(--secondary);
+        }
+        .sidebar .nav-link.active i {
+            color: var(--primary);
+        }
+        .sidebar .nav-link.text-danger {
+            color: #ffb3b3 !important;
+        }
+        .sidebar .nav-link.text-danger:hover {
+            background: rgba(255,255,255,0.1);
+            color: #ff8a8a !important;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+            background: var(--gray-bg);
+        }
+        .sidebar.minimized + .main-content {
+            margin-left: 80px;
+        }
+        .navbar-mobile {
+            display: none;
+            background: white;
+            padding: 12px 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            align-items: center;
+            gap: 15px;
+        }
+        .navbar-mobile h5 {
+            margin: 0;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        .container-fluid {
+            padding: 20px 30px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 991.98px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 260px !important;
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            .sidebar.minimized .sidebar-header h4,
+            .sidebar.minimized .nav-link span {
+                display: inline-block;
+            }
+            .sidebar.minimized .nav-link i {
+                font-size: 1.2rem;
+                width: 24px;
+                text-align: left;
+            }
+            .main-content {
+                margin-left: 0 !important;
+            }
+            .navbar-mobile {
+                display: flex;
+            }
+            .container-fluid {
+                padding: 15px;
+            }
+        }
+
+        /* ===== KHUSUS HALAMAN LOKASI ===== */
         .table th, .table td {
             vertical-align: middle;
         }
@@ -32,81 +208,113 @@
         .radius-input-group span {
             margin-left: 0.5rem;
         }
+        /* Loading Overlay */
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,20,0,0.8);
+            backdrop-filter: blur(5px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            transition: opacity 0.3s;
+        }
+        #loading-overlay .spinner-border {
+            width: 4rem;
+            height: 4rem;
+            border-width: 0.3rem;
+        }
+        /* Toast custom */
         .toast-container {
-            z-index: 1050;
+            z-index: 1060;
+        }
+        .toast {
+            background: white;
+            border-left: 4px solid var(--primary);
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
     </style>
-    <!-- Fallback config jika file tidak ditemukan (untuk demo) -->
-    <script>
-        window.CONFIG = window.CONFIG || {
-            API_URL: 'https://script.google.com/macros/s/AKfycbyfvnyUJUpCwWKvO6hRq_mcrvUif_QizubIgGOnaVY41oOUp76LavpWy7X78lZEJaNl/exec'
-        };
-    </script>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-dark bg-success fixed-top shadow">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#"><i class="bi bi-building"></i> Admin Masjid Al-Ikhlas</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-        </div>
-    </nav>
-
-    <!-- Sidebar Offcanvas -->
-    <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title">Menu Admin</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-        </div>
-        <div class="offcanvas-body">
-            <ul class="nav flex-column">
-                <li class="nav-item"><a class="nav-link" href="dashboard.html"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" href="fitrah.html"><i class="bi bi-archive"></i> Zakat Fitrah</a></li>
-                <li class="nav-item"><a class="nav-link" href="mal.html"><i class="bi bi-cash-stack"></i> Zakat Mal</a></li>
-                <li class="nav-item"><a class="nav-link" href="pezakat.html"><i class="bi bi-people"></i> Data Pezakat</a></li>
-                <li class="nav-item"><a class="nav-link" href="mustahik.html"><i class="bi bi-hand-index-thumb"></i> Data Mustahik</a></li>
-                <li class="nav-item"><a class="nav-link active" href="lokasi.html"><i class="bi bi-geo-alt"></i> Lokasi Izin</a></li>
-                <li class="nav-item"><a class="nav-link" href="sesi.html"><i class="bi bi-calendar-check"></i> Sesi Absensi</a></li>
-                <li class="nav-item"><a class="nav-link" href="laporan.html"><i class="bi bi-file-text"></i> Laporan</a></li>
-                <li class="nav-item"><a class="nav-link" href="settings.html"><i class="bi bi-gear"></i> Pengaturan</a></li>
-                <li class="nav-item"><a class="nav-link text-danger" href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
-            </ul>
-        </div>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="spinner-border text-light" role="status"></div>
+        <div id="loading-progress" class="mt-3 h4">0%</div>
+        <div id="loading-message" class="mt-2">Memuat data...</div>
     </div>
 
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="bi bi-building"></i> Admin Masjid</h4>
+            <button class="sidebar-toggle-btn d-none d-lg-block" onclick="toggleSidebarMinimize()" id="sidebarToggleBtn">
+                <i class="bi bi-arrow-left-circle" id="toggleIcon"></i>
+            </button>
+            <button class="btn-close btn-close-white d-lg-none" onclick="toggleSidebar()"></button>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link" href="dashboard.html"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="fitrah.html"><i class="bi bi-archive"></i> <span>Zakat Fitrah</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="mal.html"><i class="bi bi-cash-stack"></i> <span>Zakat Mal</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="fidyah.html"><i class="bi bi-heart"></i> <span>Zakat Fidyah</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="pezakat.html"><i class="bi bi-people"></i> <span>Data Pezakat</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="mustahik.html"><i class="bi bi-hand-index-thumb"></i> <span>Data Mustahik</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="kategori_mustahik.html"><i class="bi bi-tags"></i> <span>Kategori Mustahik</span></a></li>
+            <li class="nav-item"><a class="nav-link active" href="lokasi.html"><i class="bi bi-geo-alt"></i> <span>Lokasi Izin</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="sesi.html"><i class="bi bi-calendar-check"></i> <span>Sesi Absensi</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="laporan.html"><i class="bi bi-file-text"></i> <span>Laporan</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="rekap-keuangan.html"><i class="bi bi-pie-chart"></i> <span>Rekap Zakat</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="settings.html"><i class="bi bi-gear"></i> <span>Pengaturan</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="../index.html"><i class="bi bi-house-door"></i> <span>Beranda</span></a></li>
+            <li class="nav-item"><a class="nav-link text-danger" href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> <span>Logout</span></a></li>
+        </ul>
+    </aside>
+
     <!-- Main Content -->
-    <main class="container mt-5 pt-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="text-success"><i class="bi bi-geo-alt"></i> Kelola Lokasi Izin Absensi</h2>
-            <button class="btn btn-success" onclick="tambahLokasi()"><i class="bi bi-plus-circle"></i> Tambah Lokasi</button>
-        </div>
+    <main class="main-content" id="mainContent">
+        <nav class="navbar-mobile">
+            <button class="btn btn-success" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+            <h5>Lokasi Izin</h5>
+        </nav>
 
-        <!-- Info Card -->
-        <div class="alert alert-info mb-4">
-            <i class="bi bi-info-circle"></i> 
-            Lokasi yang ditambahkan akan digunakan sebagai geofence untuk absensi petugas. 
-            Petugas hanya dapat absen jika berada dalam radius yang ditentukan dari lokasi ini.
-        </div>
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-success"><i class="bi bi-geo-alt"></i> Kelola Lokasi Izin Absensi</h2>
+                <button class="btn btn-success" onclick="tambahLokasi()"><i class="bi bi-plus-circle"></i> Tambah Lokasi</button>
+            </div>
 
-        <!-- Tabel Lokasi -->
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover align-middle bg-white rounded shadow-sm">
-                <thead class="table-success text-center">
-                    <tr>
-                        <th>No</th>
-                        <th>Nama Lokasi</th>
-                        <th>Latitude</th>
-                        <th>Longitude</th>
-                        <th>Radius (meter)</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    <tr><td colspan="6" class="text-center">Memuat data...</td></tr>
-                </tbody>
-            </table>
+            <!-- Info Card -->
+            <div class="alert alert-info mb-4">
+                <i class="bi bi-info-circle"></i> 
+                Lokasi yang ditambahkan akan digunakan sebagai geofence untuk absensi petugas. 
+                Petugas hanya dapat absen jika berada dalam radius yang ditentukan dari lokasi ini.
+            </div>
+
+            <!-- Tabel Lokasi -->
+            <div class="table-responsive">
+                <table class="table table-hover align-middle bg-white rounded shadow-sm">
+                    <thead class="table-success text-center">
+                        <tr>
+                            <th>No</th>
+                            <th>Nama Lokasi</th>
+                            <th>Latitude</th>
+                            <th>Longitude</th>
+                            <th>Radius (meter)</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr><td colspan="6" class="text-center">Memuat data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
 
@@ -172,55 +380,65 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="../js/config.js"></script>
     <script src="../js/api.js"></script>
+    <script src="../js/loader.js"></script>
     <script>
+        // ====================== FUNGSI SIDEBAR ======================
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+        }
+
+        function toggleSidebarMinimize() {
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('toggleIcon');
+            sidebar.classList.toggle('minimized');
+            const isMinimized = sidebar.classList.contains('minimized');
+            if (isMinimized) {
+                icon.classList.remove('bi-arrow-left-circle');
+                icon.classList.add('bi-arrow-right-circle');
+            } else {
+                icon.classList.remove('bi-arrow-right-circle');
+                icon.classList.add('bi-arrow-left-circle');
+            }
+            localStorage.setItem('sidebarMinimized', isMinimized);
+        }
+
         // ====================== CEK LOGIN ======================
         let user = JSON.parse(localStorage.getItem('user'));
         if (!user || user.role !== 'admin') window.location.href = '../login.html';
-        function logout() { localStorage.removeItem('user'); window.location.href = '../login.html'; }
+
+        function logout() { 
+            localStorage.removeItem('user'); 
+            window.location.href = '../login.html'; 
+        }
 
         // ====================== GLOBAL ======================
         let allData = [];
         let modalInstance;
         let map, marker, circle;
 
-        // Fungsi cache
-        function getCachedData(endpoint) {
-            const cached = sessionStorage.getItem('cache_' + endpoint);
-            return cached ? JSON.parse(cached) : null;
-        }
-        function setCachedData(endpoint, data) {
-            sessionStorage.setItem('cache_' + endpoint, JSON.stringify(data));
-        }
-
         // Fungsi toast
         function showToast(message, type = 'success') {
             const toastEl = document.getElementById('liveToast');
             document.getElementById('toastMessage').innerText = message;
-            toastEl.className = `toast bg-${type} text-white`;
+            toastEl.className = `toast border-${type}`;
+            if (type === 'success') {
+                toastEl.style.borderLeftColor = 'var(--primary)';
+            } else {
+                toastEl.style.borderLeftColor = 'var(--danger)';
+            }
             bootstrap.Toast.getOrCreateInstance(toastEl).show();
         }
 
-        // ====================== LOAD DATA ======================
-        async function loadData() {
-            const cached = getCachedData('lokasi_izin');
-            if (cached) {
-                allData = cached;
-                renderTable(allData);
-            } else {
-                document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="text-center">Memuat data...</td></tr>';
-            }
-            try {
-                const fresh = await apiGet('lokasi_izin');
-                setCachedData('lokasi_izin', fresh);
-                allData = fresh;
-                renderTable(allData);
-            } catch (error) {
-                console.error(error);
-                if (!cached) {
-                    document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="text-center text-danger">Gagal memuat data.</td></tr>';
-                }
-                showToast('Gagal memuat data: ' + error.message, 'danger');
-            }
+        // ====================== LOAD DATA DARI CACHE ======================
+        function loadDataFromCache() {
+            allData = LOADER.getData('lokasi_izin');
+            renderTable(allData);
+        }
+
+        // ====================== REFRESH DATA ======================
+        async function refreshData() {
+            await LOADER.loadAllData(true);
+            loadDataFromCache();
         }
 
         function renderTable(data) {
@@ -251,6 +469,7 @@
             document.getElementById('lokasiForm').reset();
             document.getElementById('radius').value = 100;
 
+            // Ambil lokasi pengguna jika tersedia
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (pos) => {
@@ -295,7 +514,9 @@
         function initMap(lat, lng, radius = 100) {
             if (map) map.remove();
             map = L.map('map').setView([lat, lng], 16);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; CartoDB'
+            }).addTo(map);
             marker = L.marker([lat, lng], { draggable: true }).addTo(map);
             circle = L.circle([lat, lng], {
                 color: 'green',
@@ -356,7 +577,7 @@
                     showToast('Lokasi ditambahkan', 'success');
                 }
                 modalInstance.hide();
-                await loadData();
+                await refreshData();
             } catch (error) {
                 showToast('Gagal: ' + error.message, 'danger');
             }
@@ -368,16 +589,47 @@
             try {
                 await apiDelete('lokasi_izin', id);
                 showToast('Lokasi dihapus', 'success');
-                await loadData();
+                await refreshData();
             } catch (error) {
                 showToast('Gagal hapus: ' + error.message, 'danger');
             }
         }
 
         // ====================== INIT ======================
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Cek status sidebar tersimpan
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('toggleIcon');
+            const isMinimized = localStorage.getItem('sidebarMinimized') === 'true';
+            if (isMinimized) {
+                sidebar.classList.add('minimized');
+                if (icon) {
+                    icon.classList.remove('bi-arrow-left-circle');
+                    icon.classList.add('bi-arrow-right-circle');
+                }
+            }
+
+            // Loading overlay
+            const overlay = document.getElementById('loading-overlay');
+            if (!LOADER.isAllDataLoaded()) {
+                overlay.style.display = 'flex';
+                try {
+                    await LOADER.loadAllData(false, (progress, message) => {
+                        document.getElementById('loading-progress').innerText = progress + '%';
+                        document.getElementById('loading-message').innerText = message;
+                    });
+                } catch (e) {
+                    console.error('Gagal memuat data:', e);
+                    showToast('Gagal memuat data: ' + e.message, 'danger');
+                } finally {
+                    overlay.style.display = 'none';
+                }
+            }
+
             modalInstance = new bootstrap.Modal(document.getElementById('formModal'));
-            loadData();
+            loadDataFromCache();
+
+            // Hapus peta saat modal ditutup
             document.getElementById('formModal').addEventListener('hidden.bs.modal', () => {
                 if (map) map.remove();
                 map = null;
