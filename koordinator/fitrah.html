@@ -287,8 +287,7 @@
         <div class="container-fluid">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="text-success" id="pageTitle">📋 Data Distribusi Zakat Fitrah</h2>
-                <div>
-                    <!-- Tombol Undo/Redo & Hapus Terpilih -->
+                <div id="normalActionButtons">
                     <button class="btn btn-secondary me-2" id="undoBtn" onclick="undo()" disabled><i class="bi bi-arrow-return-left"></i> Undo</button>
                     <button class="btn btn-secondary me-2" id="redoBtn" onclick="redo()" disabled><i class="bi bi-arrow-return-right"></i> Redo</button>
                     <button class="btn btn-danger me-2" id="deleteSelectedBtn" onclick="deleteSelected()" disabled><i class="bi bi-trash"></i> Hapus Terpilih</button>
@@ -297,55 +296,77 @@
                     <button class="btn btn-warning" onclick="document.getElementById('importFile').click()"><i class="bi bi-upload"></i> Impor CSV</button>
                     <input type="file" id="importFile" accept=".csv" style="display: none;" onchange="importCSV(this.files[0])">
                 </div>
+                <button class="btn btn-primary" id="toggleModeBtn" onclick="togglePenyaluranMode()"><i class="bi bi-phone"></i> Mode Penyaluran</button>
             </div>
 
-            <!-- Action Bar: Filter Status + Search -->
-            <div class="action-bar">
-                <div class="row g-3 align-items-center">
-                    <div class="col-md-3">
-                        <div class="input-group">
-                            <span class="input-group-text bg-success text-white"><i class="bi bi-funnel"></i></span>
-                            <select class="form-select" id="filterStatus" onchange="filterData()">
-                                <option value="semua">Semua Status</option>
-                                <option value="belum disalurkan">Belum Disalurkan</option>
-                                <option value="sudah disalurkan">Sudah Disalurkan</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-9">
-                        <div class="input-group">
-                            <span class="input-group-text bg-success text-white"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control" id="searchInput" placeholder="Cari nama..." onkeyup="filterData()">
-                            <button class="btn btn-outline-secondary" type="button" onclick="clearSearch()"><i class="bi bi-x"></i></button>
-                        </div>
+            <!-- Pencarian Global -->
+            <div class="row mb-3">
+                <div class="col-md-4 offset-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text bg-success text-white"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" id="searchInput" placeholder="Cari nama..." onkeyup="filterData()">
+                        <button class="btn btn-outline-secondary" type="button" onclick="clearSearch()"><i class="bi bi-x"></i></button>
                     </div>
                 </div>
             </div>
 
-            <!-- Tabel Data -->
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-success text-center">
-                        <tr>
-                            <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
-                            <th>No</th>
-                            <th>Nama Muzaki</th>
-                            <th>Jml Jiwa</th>
-                            <th>Beras (kg)</th>
-                            <th>Uang (Rp)</th>
-                            <th>RT</th>
-                            <th>Tgl Input</th>
-                            <th>Status</th>
-                            <th>Tgl Salur</th>
-                            <th>Penerima</th>
-                            <th>Input By</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        <tr><td colspan="13" class="text-center">Memuat data...</td></tr>
-                    </tbody>
-                </table>
+            <!-- Konten Mode Normal -->
+            <div id="normalModeContent">
+                <div class="action-bar">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-text bg-success text-white"><i class="bi bi-funnel"></i></span>
+                                <select class="form-select" id="filterStatus" onchange="filterData()">
+                                    <option value="semua">Semua Status</option>
+                                    <option value="belum disalurkan">Belum Disalurkan</option>
+                                    <option value="sudah disalurkan">Sudah Disalurkan</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-success text-center">
+                            <tr>
+                                <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
+                                <th>No</th>
+                                <th>Nama Muzaki</th>
+                                <th>Jml Jiwa</th>
+                                <th>Beras (kg)</th>
+                                <th>Uang (Rp)</th>
+                                <th>RT</th>
+                                <th>Tgl Input</th>
+                                <th>Status</th>
+                                <th>Tgl Salur</th>
+                                <th>Penerima</th>
+                                <th>Input By</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr><td colspan="13" class="text-center">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Konten Mode Penyaluran -->
+            <div id="penyaluranModeContainer" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">Mode Penyaluran (Per Mustahik)</h4>
+                    <div>
+                        <label for="sortMustahik" class="form-label me-2">Urutkan:</label>
+                        <select id="sortMustahik" class="form-select d-inline-block w-auto" onchange="sortPenyaluranCards()">
+                            <option value="nama">Nama (A-Z)</option>
+                            <option value="rt">RT</option>
+                            <option value="jumlah">Jumlah Muzaki</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row" id="penyaluranCards"></div>
             </div>
         </div>
     </main>
@@ -469,6 +490,11 @@
         let hargaPerKg = 18000;
         let berasPerJiwa = 2.5;
         let currentSalurkanId = null;
+
+        // Variabel untuk mode penyaluran
+        let penyaluranModeActive = false;
+        let previousFilterStatus = 'semua';
+        let mustahikItemsMap = new Map();
 
         // ====================== UNDO/REDO & MULTIPLE DELETE ======================
         let undoStack = [];
@@ -627,7 +653,12 @@
                 if (searchText && !(item.nama && item.nama.toLowerCase().includes(searchText))) return false;
                 return true;
             });
-            renderTable(filteredData);
+
+            if (penyaluranModeActive) {
+                renderPenyaluranCards();
+            } else {
+                renderTable(filteredData);
+            }
         }
 
         function clearSearch() {
@@ -677,7 +708,7 @@
             `}).join('');
         }
 
-        // ====================== UPDATE STATUS ======================
+        // ====================== UPDATE STATUS (mode normal) ======================
         async function bukaModalSalurkan(id) {
             currentSalurkanId = id;
             document.getElementById('salurkanMustahik').value = '';
@@ -947,9 +978,158 @@
             .catch(err => ({ success: false, error: err.message }));
         }
 
+        // ====================== MODE PENYALURAN ======================
+        function togglePenyaluranMode() {
+            const normalContent = document.getElementById('normalModeContent');
+            const penyaluranContainer = document.getElementById('penyaluranModeContainer');
+            const toggleBtn = document.getElementById('toggleModeBtn');
+            const normalActionButtons = document.getElementById('normalActionButtons');
+
+            if (!penyaluranModeActive) {
+                previousFilterStatus = document.getElementById('filterStatus').value;
+                document.getElementById('filterStatus').value = 'belum disalurkan';
+                normalContent.style.display = 'none';
+                penyaluranContainer.style.display = 'block';
+                normalActionButtons.style.display = 'none';
+                toggleBtn.innerHTML = '<i class="bi bi-table"></i> Mode Normal';
+                penyaluranModeActive = true;
+                filterData();
+            } else {
+                document.getElementById('filterStatus').value = previousFilterStatus;
+                normalContent.style.display = 'block';
+                penyaluranContainer.style.display = 'none';
+                normalActionButtons.style.display = 'block';
+                toggleBtn.innerHTML = '<i class="bi bi-phone"></i> Mode Penyaluran';
+                penyaluranModeActive = false;
+                filterData();
+            }
+        }
+
+        function sortPenyaluranCards() {
+            if (penyaluranModeActive) {
+                renderPenyaluranCards();
+            }
+        }
+
+        function renderPenyaluranCards() {
+            const container = document.getElementById('penyaluranCards');
+            if (!container) return;
+
+            const belumData = filteredData;
+
+            const mustahikMap = new Map();
+            mustahikItemsMap.clear();
+
+            belumData.forEach(item => {
+                let mustahikId, mustahikNama, mustahikRt;
+
+                if (item.id_mustahik) {
+                    const must = mustahikList.find(m => m.id == item.id_mustahik);
+                    if (must) {
+                        mustahikId = must.id;
+                        mustahikNama = must.nama;
+                        mustahikRt = must.rt;
+                    } else {
+                        mustahikId = 'unknown_' + item.id;
+                        mustahikNama = '(ID tidak dikenal)';
+                        mustahikRt = null;
+                    }
+                } else if (item.penerima_manual) {
+                    mustahikId = 'manual_' + item.penerima_manual.replace(/\s+/g, '_');
+                    mustahikNama = item.penerima_manual;
+                    mustahikRt = null;
+                } else {
+                    mustahikId = 'belum_ditentukan';
+                    mustahikNama = 'Belum ditentukan';
+                    mustahikRt = null;
+                }
+
+                if (!mustahikMap.has(mustahikId)) {
+                    mustahikMap.set(mustahikId, {
+                        id: mustahikId,
+                        nama: mustahikNama,
+                        rt: mustahikRt,
+                        items: [],
+                        totalBeras: 0
+                    });
+                }
+                const entry = mustahikMap.get(mustahikId);
+                entry.items.push(item);
+                entry.totalBeras += item.beras || 0;
+            });
+
+            let mustahikArray = Array.from(mustahikMap.values());
+            mustahikArray.forEach(m => {
+                mustahikItemsMap.set(m.id, m.items.map(item => item.id));
+            });
+
+            const sortBy = document.getElementById('sortMustahik').value;
+            if (sortBy === 'nama') {
+                mustahikArray.sort((a, b) => a.nama.localeCompare(b.nama));
+            } else if (sortBy === 'rt') {
+                mustahikArray.sort((a, b) => {
+                    if (a.rt === b.rt) return a.nama.localeCompare(b.nama);
+                    if (!a.rt) return 1;
+                    if (!b.rt) return -1;
+                    return a.rt.localeCompare(b.rt);
+                });
+            } else if (sortBy === 'jumlah') {
+                mustahikArray.sort((a, b) => b.items.length - a.items.length);
+            }
+
+            if (mustahikArray.length === 0) {
+                container.innerHTML = '<div class="col-12"><div class="alert alert-info">Tidak ada mustahik yang perlu dikunjungi.</div></div>';
+                return;
+            }
+
+            let html = '';
+            mustahikArray.forEach(m => {
+                const rtText = m.rt ? `RT ${m.rt}` : 'RT tidak diketahui';
+                const itemCount = m.items.length;
+                const totalBeras = m.totalBeras.toFixed(1);
+                html += `
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">${m.nama}</h5>
+                            <p class="card-text mb-1"><small class="text-muted">${rtText}</small></p>
+                            <p class="card-text mb-1">Menerima dari ${itemCount} muzaki: ${totalBeras} kg beras</p>
+                            <hr>
+                            <button class="btn btn-success btn-sm w-100" onclick="selesaikanMustahik('${m.id}')"><i class="bi bi-check-circle"></i> Selesai Dikunjungi</button>
+                        </div>
+                    </div>
+                </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        async function selesaikanMustahik(mustahikId) {
+            const itemIds = mustahikItemsMap.get(mustahikId);
+            if (!itemIds || itemIds.length === 0) {
+                alert('Tidak ada data terkait.');
+                return;
+            }
+
+            if (!confirm(`Tandai ${itemIds.length} muzaki sebagai sudah disalurkan untuk mustahik ini?`)) return;
+
+            try {
+                const tanggalSalur = new Date().toISOString().split('T')[0];
+                for (let id of itemIds) {
+                    await apiUpdate('fitrah', id, { 
+                        status: 'sudah disalurkan', 
+                        tanggalSalur,
+                    });
+                }
+                await refreshData();
+                alert('Data berhasil diperbarui.');
+            } catch (error) {
+                alert('Gagal: ' + error);
+            }
+        }
+
         // ====================== INIT ======================
         document.addEventListener('DOMContentLoaded', async function() {
-            // Cek status sidebar tersimpan
             const sidebar = document.getElementById('sidebar');
             const icon = document.getElementById('toggleIcon');
             const isMinimized = localStorage.getItem('sidebarMinimized') === 'true';
@@ -963,8 +1143,6 @@
 
             const overlay = document.getElementById('loading-overlay');
             const neededEndpoints = ['fitrah', 'mustahik', 'settings'];
-
-            // Cek apakah data yang diperlukan sudah ada di cache
             const needLoad = neededEndpoints.filter(ep => !LOADER.getData(ep).length);
             if (needLoad.length > 0) {
                 overlay.style.display = 'flex';
@@ -986,8 +1164,6 @@
             loadSettingsFromCache();
             loadMustahikFromCache();
             loadDataFromCache();
-
-            // Inisialisasi tombol undo/redo
             updateUndoRedoButtons();
         });
     </script>
