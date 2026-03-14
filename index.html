@@ -16,7 +16,7 @@
         body {
             font-family: 'Inter', sans-serif;
             scroll-behavior: smooth;
-            padding-top: 70px; /* offset fixed navbar */
+            padding-top: 70px;
         }
         .navbar {
             backdrop-filter: blur(10px);
@@ -33,6 +33,14 @@
         .btn-success:hover {
             background-color: #1e3b24;
             border-color: #1e3b24;
+        }
+        .btn-outline-danger {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+        .btn-outline-danger:hover {
+            background-color: #dc3545;
+            color: white;
         }
         .hero {
             min-height: 100vh;
@@ -99,6 +107,45 @@
             width: 30px;
             color: #2f5d3a;
         }
+        /* Gaya untuk thumbnail flyer */
+        .flyer-thumb {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .flyer-thumb:hover {
+            transform: scale(1.03);
+        }
+        /* Modal gambar */
+        .modal-img {
+            width: 100%;
+            height: auto;
+        }
+        /* Ikon bulat konsisten */
+        .rounded-circle {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .card-body {
+            padding: 1.5rem;
+        }
+        /* Timer container responsive */
+        .timer-container .bg-dark {
+            background-color: rgba(0,0,0,0.5) !important;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        #countdown span {
+            line-height: 1.2;
+        }
     </style>
 </head>
 <body>
@@ -106,7 +153,8 @@
     <nav class="navbar navbar-expand-lg navbar-light fixed-top shadow-sm">
         <div class="container">
             <a class="navbar-brand" href="#">
-                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%232f5d3a'/%3E%3Cpath d='M30 40 L50 20 L70 40 L60 60 L40 60 Z' fill='%23f4c542'/%3E%3C/svg%3E" alt="Logo" width="40" class="d-inline-block align-text-middle me-2">
+                <!-- Logo baru masjid -->
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' width='40' height='40'%3E%3Ccircle cx='50' cy='50' r='45' fill='%232f5d3a'/%3E%3Crect x='30' y='50' width='40' height='30' fill='%23f4c542' rx='4'/%3E%3Cpolygon points='50,15 25,50 75,50' fill='%23f4c542'/%3E%3Crect x='45' y='65' width='10' height='15' fill='%23d4a017' rx='2'/%3E%3Ccircle cx='30' cy='40' r='6' fill='%23f4c542'/%3E%3Ccircle cx='70' cy='40' r='6' fill='%23f4c542'/%3E%3Ccircle cx='30' cy='34' r='2' fill='%232f5d3a'/%3E%3Ccircle cx='70' cy='34' r='2' fill='%232f5d3a'/%3E%3C/svg%3E" alt="Logo Masjid Al-Ikhlas" width="40" class="d-inline-block align-text-middle me-2">
                 <span class="fw-bold">Masjid Al-Ikhlas</span> Ngijo
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -119,7 +167,17 @@
                     <li class="nav-item"><a class="nav-link" href="#zakat">Zakat</a></li>
                     <li class="nav-item"><a class="nav-link" href="#statistik">Statistik</a></li>
                     <li class="nav-item"><a class="nav-link" href="#kontak">Kontak</a></li>
-                    <li class="nav-item"><a class="btn btn-success ms-lg-3 px-4" href="login.html">Login</a></li>
+                    <!-- Menu untuk user yang belum login -->
+                    <li class="nav-item" id="loginNavItem">
+                        <a class="btn btn-success ms-lg-3 px-4" href="login.html">Login</a>
+                    </li>
+                    <!-- Menu untuk user yang sudah login (awalnya disembunyikan) -->
+                    <li class="nav-item" id="dashboardNavItem" style="display: none;">
+                        <a class="btn btn-success ms-lg-3 px-4" href="#" id="dashboardLink">Dashboard</a>
+                    </li>
+                    <li class="nav-item" id="logoutNavItem" style="display: none;">
+                        <button class="btn btn-outline-danger ms-lg-2 px-4" onclick="logout()">Logout</button>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -130,7 +188,28 @@
         <div class="container text-center" data-aos="fade-up">
             <h1 class="display-3 fw-bold">Selamat Datang di Masjid Al-Ikhlas Ngijo</h1>
             <p class="lead mb-4">Sistem Manajemen Zakat yang Transparan, Amanah, dan Modern</p>
-            <a href="#zakat" class="btn btn-warning btn-lg px-5 py-3 fw-semibold">Info Zakat</a>
+            
+            <!-- Timer Countdown Zakat Fitrah -->
+            <div class="timer-container mt-4 text-white">
+                <h4 class="fw-semibold mb-3">⏳ Batas Pembayaran Zakat Fitrah</h4>
+                <div id="countdown" class="d-flex justify-content-center gap-2 gap-md-3 flex-wrap">
+                    <div class="bg-dark bg-opacity-25 p-3 rounded-3" style="min-width: 100px;">
+                        <span id="days" class="fs-1 fw-bold">00</span><br>Hari
+                    </div>
+                    <div class="bg-dark bg-opacity-25 p-3 rounded-3" style="min-width: 100px;">
+                        <span id="hours" class="fs-1 fw-bold">00</span><br>Jam
+                    </div>
+                    <div class="bg-dark bg-opacity-25 p-3 rounded-3" style="min-width: 100px;">
+                        <span id="minutes" class="fs-1 fw-bold">00</span><br>Menit
+                    </div>
+                    <div class="bg-dark bg-opacity-25 p-3 rounded-3" style="min-width: 100px;">
+                        <span id="seconds" class="fs-1 fw-bold">00</span><br>Detik
+                    </div>
+                </div>
+                <p class="mt-2 small opacity-75">*Batas akhir: 18 Maret 2026 pukul 16.00 WIB</p>
+            </div>
+
+            <a href="#zakat" class="btn btn-warning btn-lg px-5 py-3 fw-semibold mt-4">Info Zakat</a>
         </div>
     </section>
 
@@ -153,27 +232,29 @@
         </div>
     </section>
 
-    <!-- Zakat Section -->
+    <!-- Zakat Section dengan 4 card sejajar -->
     <section id="zakat" class="py-5 bg-light">
         <div class="container">
             <h2 class="section-title text-center">Informasi Zakat</h2>
             <div class="row g-4">
-                <div class="col-md-4" data-aos="zoom-in">
+                <!-- Card 1: Zakat Fitrah -->
+                <div class="col-md-6 col-lg-3" data-aos="zoom-in">
                     <div class="card h-100 shadow">
                         <div class="card-body text-center p-4">
-                            <div class="bg-warning bg-opacity-10 d-inline-block p-3 rounded-circle mb-3">
+                            <div class="bg-warning bg-opacity-10 rounded-circle mb-3">
                                 <i class="bi bi-archive fs-1 text-warning"></i>
                             </div>
                             <h4 class="card-title fw-bold">Zakat Fitrah</h4>
-                            <p class="card-text">Beras 2,5 kg <br> atau uang senilai <strong>Rp45.000,-</strong> per jiwa.</p>
+                            <p class="card-text">Beras 2,6 kg <br> atau uang senilai <strong>Rp36.000,-</strong> per jiwa.</p>
                             <a href="#" class="btn btn-sm btn-outline-warning">Bayar Sekarang</a>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4" data-aos="zoom-in" data-aos-delay="100">
+                <!-- Card 2: Zakat Mal -->
+                <div class="col-md-6 col-lg-3" data-aos="zoom-in" data-aos-delay="100">
                     <div class="card h-100 shadow">
                         <div class="card-body text-center p-4">
-                            <div class="bg-success bg-opacity-10 d-inline-block p-3 rounded-circle mb-3">
+                            <div class="bg-success bg-opacity-10 rounded-circle mb-3">
                                 <i class="bi bi-cash-stack fs-1 text-success"></i>
                             </div>
                             <h4 class="card-title fw-bold">Zakat Mal</h4>
@@ -182,15 +263,29 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4" data-aos="zoom-in" data-aos-delay="200">
+                <!-- Card 3: Mustahik -->
+                <div class="col-md-6 col-lg-3" data-aos="zoom-in" data-aos-delay="200">
                     <div class="card h-100 shadow">
                         <div class="card-body text-center p-4">
-                            <div class="bg-info bg-opacity-10 d-inline-block p-3 rounded-circle mb-3">
+                            <div class="bg-info bg-opacity-10 rounded-circle mb-3">
                                 <i class="bi bi-people fs-1 text-info"></i>
                             </div>
                             <h4 class="card-title fw-bold">Mustahik</h4>
                             <p class="card-text">Disalurkan kepada 8 golongan yang berhak (fakir, miskin, amil, dll).</p>
                             <a href="#" class="btn btn-sm btn-outline-info">Pelajari</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 4: Flyer Zakat (gambar) -->
+                <div class="col-md-6 col-lg-3" data-aos="zoom-in" data-aos-delay="300">
+                    <div class="card h-100 shadow">
+                        <div class="card-body text-center p-4">
+                            <div class="bg-danger bg-opacity-10 rounded-circle mb-3">
+                                <i class="bi bi-image fs-1 text-danger"></i>
+                            </div>
+                            <h4 class="card-title fw-bold">Zakat 1447 H</h4>
+                            <img src="zakat1447h.webp" alt="Flyer Zakat 1447 H" class="flyer-thumb mt-2 mb-2" data-bs-toggle="modal" data-bs-target="#flyerModal">
+                            <p class="card-text small text-secondary mt-2">Klik gambar untuk memperbesar</p>
                         </div>
                     </div>
                 </div>
@@ -201,27 +296,27 @@
     <!-- Statistik & Laporan -->
     <section id="statistik" class="py-5">
         <div class="container">
-            <h2 class="section-title text-center">Laporan Zakat Tahun 2025</h2>
+            <h2 class="section-title text-center">Laporan Zakat Tahun 2026</h2>
             <div class="row g-4">
                 <div class="col-md-4" data-aos="flip-left">
                     <div class="stat-card">
                         <i class="bi bi-graph-up-arrow fs-1 text-success"></i>
-                        <h3>Rp 125 Jt</h3>
-                        <p class="text-secondary">Zakat Terkumpul</p>
+                        <h3 id="zakatTerkumpul">0</h3>
+                        <p class="text-secondary">Jumlah Pezakat</p>
                     </div>
                 </div>
                 <div class="col-md-4" data-aos="flip-left" data-aos-delay="100">
                     <div class="stat-card">
                         <i class="bi bi-arrow-right-circle fs-1 text-warning"></i>
-                        <h3>Rp 98 Jt</h3>
-                        <p class="text-secondary">Telah Disalurkan</p>
+                        <h3 id="zakatDisalurkan">0</h3>
+                        <p class="text-secondary">Penerima Fitrah</p>
                     </div>
                 </div>
                 <div class="col-md-4" data-aos="flip-left" data-aos-delay="200">
                     <div class="stat-card">
                         <i class="bi bi-people-fill fs-1 text-info"></i>
-                        <h3>237 Jiwa</h3>
-                        <p class="text-secondary">Penerima Manfaat</p>
+                        <h3 id="penerimaManfaat">0</h3>
+                        <p class="text-secondary">Total Mustahik</p>
                     </div>
                 </div>
             </div>
@@ -238,15 +333,15 @@
             <div class="row g-5">
                 <div class="col-md-6">
                     <div class="map-container">
-                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3955.123456!2d112.123456!3d-7.123456!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zN8KwMDcnMjQuNSJTIDExMsKwMDcnMjIuMCJF!5e0!3m2!1sen!2sid!4v1234567890" width="100%" height="300" style="border:0;" allowfullscreen loading="lazy"></iframe>
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d440.15105434671716!2d110.35977336702123!3d-7.850740574031682!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a5643ff5213b5%3A0xcb028258c49bd22d!2zTWFzamlkIEFsIElraGxhcyBOZ2lqbyDqpqnqprHqp4DqppfqprbqpqPqp4DqpoTqpq3qp4Dqpobqpo_qprPqp4Dqpq3qprHqp4DqppTqprbqppfqprrqprQ!5e0!3m2!1sen!2sid!4v1773452635355!5m2!1sen!2sid" width="100%" height="300" style="border:0;" allowfullscreen loading="lazy"></iframe>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="contact-info">
                         <h4 class="fw-bold mb-4">Alamat & Kontak</h4>
-                        <p><i class="bi bi-geo-alt-fill me-2"></i> Jl. Raya Ngijo No.123, Karangploso, Malang</p>
-                        <p><i class="bi bi-telephone-fill me-2"></i> <a href="tel:+6281234567890" class="text-dark text-decoration-none">0812-3456-7890</a></p>
-                        <p><i class="bi bi-envelope-fill me-2"></i> <a href="mailto:masjidalikhlas.ngijo@gmail.com" class="text-dark text-decoration-none">masjidalikhlas.ngijo@gmail.com</a></p>
+                        <p><i class="bi bi-geo-alt-fill me-2"></i> Jl. Parangtritis Km 6,5 Ngijo Rt 06 Dk. Demangan Bangunharjo Sewon</p>
+                        <p><i class="bi bi-telephone-fill me-2"></i> <a href="http://wa.me/6281234567890" class="text-dark text-decoration-none">0812-3456-7890</a></p>
+                        <p><i class="bi bi-envelope-fill me-2"></i> <a href="mailto:alikhlas.ngijo@gmail.com" class="text-dark text-decoration-none">alikhlas.ngijo@gmail.com</a></p>
                         <hr>
                         <h5>Media Sosial</h5>
                         <a href="#" class="btn btn-outline-success btn-sm me-2"><i class="bi bi-facebook"></i></a>
@@ -268,11 +363,122 @@
         </div>
     </footer>
 
+    <!-- Modal Popup untuk Flyer -->
+    <div class="modal fade" id="flyerModal" tabindex="-1" aria-labelledby="flyerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="flyerModalLabel">Flyer Zakat 1447 H</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="zakat1447h.webp" alt="Flyer Zakat 1447 H" class="modal-img">
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Loader untuk mengambil data real (statistik) -->
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/loader.js"></script>
     <script>
         AOS.init({ duration: 1000, once: true });
+
+        // Cek status login dan sesuaikan menu navbar
+        (function() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            const loginItem = document.getElementById('loginNavItem');
+            const dashboardItem = document.getElementById('dashboardNavItem');
+            const logoutItem = document.getElementById('logoutNavItem');
+            const dashboardLink = document.getElementById('dashboardLink');
+
+            if (user && (user.role === 'admin' || user.role === 'koordinator')) {
+                // Sembunyikan login, tampilkan dashboard & logout
+                loginItem.style.display = 'none';
+                dashboardItem.style.display = 'block';
+                logoutItem.style.display = 'block';
+
+                // Set link dashboard sesuai role
+                if (user.role === 'admin') {
+                    dashboardLink.href = 'admin/dashboard.html';
+                } else if (user.role === 'koordinator') {
+                    dashboardLink.href = 'koordinator/dashboard.html';
+                }
+            } else {
+                // Tampilkan login, sembunyikan dashboard & logout
+                loginItem.style.display = 'block';
+                dashboardItem.style.display = 'none';
+                logoutItem.style.display = 'none';
+            }
+        })();
+
+        // Fungsi logout global
+        function logout() {
+            localStorage.removeItem('user');
+            location.reload();
+        }
+
+        async function updatePublicStats() {
+            try {
+                await LOADER.loadAllData(false);
+                
+                const pezakat = LOADER.getData('pezakat') || [];
+                const mustahik = LOADER.getData('mustahik') || [];
+                const fitrah = LOADER.getData('fitrah') || [];
+
+                const totalPezakat = pezakat.length;
+                const totalMustahik = mustahik.length;
+                const mustahikPenerima = new Set(fitrah.map(f => f.id_mustahik).filter(id => id)).size;
+
+                document.getElementById('zakatTerkumpul').innerText = totalPezakat;
+                document.getElementById('zakatDisalurkan').innerText = mustahikPenerima;
+                document.getElementById('penerimaManfaat').innerText = totalMustahik;
+            } catch (e) {
+                console.error('Gagal memuat data statistik', e);
+                document.getElementById('zakatTerkumpul').innerText = '0';
+                document.getElementById('zakatDisalurkan').innerText = '0';
+                document.getElementById('penerimaManfaat').innerText = '0';
+            }
+        }
+
+        updatePublicStats();
+
+        // Countdown Timer Zakat Fitrah - Batas 18 Maret 2026 16:00 WIB
+        function startCountdown(targetDate) {
+            function updateCountdown() {
+                const now = new Date().getTime();
+                const distance = targetDate - now;
+
+                if (distance < 0) {
+                    document.getElementById('days').innerText = '00';
+                    document.getElementById('hours').innerText = '00';
+                    document.getElementById('minutes').innerText = '00';
+                    document.getElementById('seconds').innerText = '00';
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                document.getElementById('days').innerText = days.toString().padStart(2, '0');
+                document.getElementById('hours').innerText = hours.toString().padStart(2, '0');
+                document.getElementById('minutes').innerText = minutes.toString().padStart(2, '0');
+                document.getElementById('seconds').innerText = seconds.toString().padStart(2, '0');
+            }
+
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        }
+
+        // Set target: 18 Maret 2026 16:00 WIB (UTC+7)
+        const targetDate = new Date('2026-03-18T16:00:00+07:00').getTime();
+        startCountdown(targetDate);
     </script>
 </body>
 </html>

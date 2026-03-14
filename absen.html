@@ -11,9 +11,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <!-- Signature Pad -->
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
-    <!-- Load konfigurasi dan API (pastikan file berada di folder yang sama) -->
-    <script src="/zakat/js/config.js"></script>
-    <script src="/zakat/js/api.js"></script>
+    <!-- Load konfigurasi dan API (relative path) -->
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -332,19 +332,18 @@
         // SIGNATURE PAD
         // =====================================================
         function initSignaturePad() {
-    const canvas = document.getElementById('signatureCanvas');
-    if (!canvas) return;
+            const canvas = document.getElementById('signatureCanvas');
+            if (!canvas) return;
 
-    // Set ukuran canvas lebih kecil (200x80)
-    canvas.width = 200;
-    canvas.height = 80;
+            // Set ukuran canvas proporsional
+            canvas.width = 400;
+            canvas.height = 160;
 
-    signaturePad = new SignaturePad(canvas, {
-        backgroundColor: 'white',
-        penColor: 'black'
-    });
-    signaturePad.clear();
-    // ... sisanya tetap sama
+            signaturePad = new SignaturePad(canvas, {
+                backgroundColor: 'white',
+                penColor: 'black'
+            });
+            signaturePad.clear();
 
             document.getElementById('clearSignature').addEventListener('click', () => {
                 signaturePad.clear();
