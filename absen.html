@@ -113,7 +113,7 @@
             display: block;
             width: 100%;
             height: auto;
-            max-height: 120px;  /* Diperkecil dari 160px */
+            max-height: 100px; /* Diperkecil dari 120px */
             background: white;
             border-radius: 12px;
             touch-action: none;
@@ -250,8 +250,8 @@
             <div class="mb-4">
                 <label class="form-label"><i class="bi bi-pencil me-1"></i>Tanda Tangan Digital</label>
                 <div class="signature-area">
-                    <!-- Ukuran canvas diperkecil menjadi 300x120 -->
-                    <canvas id="signatureCanvas" width="300" height="120"></canvas>
+                    <!-- Ukuran canvas diperkecil menjadi 250x100 (sebelumnya 300x120) -->
+                    <canvas id="signatureCanvas" width="250" height="100"></canvas>
                 </div>
                 <div class="signature-buttons">
                     <button type="button" class="btn btn-outline-secondary" id="clearSignature">Hapus</button>
@@ -330,15 +330,15 @@
         }
 
         // =====================================================
-        // SIGNATURE PAD
+        // SIGNATURE PAD - dengan ukuran canvas yang disesuaikan
         // =====================================================
         function initSignaturePad() {
             const canvas = document.getElementById('signatureCanvas');
             if (!canvas) return;
 
-            // Set ukuran canvas proporsional (diperkecil)
-            canvas.width = 300;   // dari 400
-            canvas.height = 120;  // dari 160
+            // Set ukuran canvas sesuai atribut HTML (250x100)
+            canvas.width = 250;
+            canvas.height = 100;
 
             signaturePad = new SignaturePad(canvas, {
                 backgroundColor: 'white',
@@ -508,7 +508,7 @@
         };
 
         // =====================================================
-        // SUBMIT ABSEN
+        // SUBMIT ABSEN - dengan kualitas kompresi diturunkan menjadi 0.2
         // =====================================================
         window.submitAbsen = async function() {
             let id_sesi, password, nama;
@@ -548,8 +548,8 @@
                 return;
             }
 
-            // Turunkan kualitas dari 0.3 menjadi 0.2
-            const ttdBase64 = signaturePad.toDataURL('image/jpeg', 0.4);
+            // Turunkan kualitas dari 0.4 menjadi 0.2 (lebih kecil)
+            const ttdBase64 = signaturePad.toDataURL('image/jpeg', 0.2);
 
             btn.disabled = true;
             submitText.classList.add('d-none');
