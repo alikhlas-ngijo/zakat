@@ -9,100 +9,308 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="../css/style.css">
     <style>
-        .table th, .table td { vertical-align: middle; }
-        .badge { font-size: 0.9em; padding: 0.5em 0.75em; }
-        .action-bar {
-            background: #f8f9fa;
+        /* ===== VARIABEL & RESET ===== */
+        :root {
+            --primary: #2e7d32;
+            --primary-light: #4caf50;
+            --primary-soft: #e8f5e9;
+            --secondary: #ffb300;
+            --danger: #d32f2f;
+            --gray-bg: #f4f6f9;
+            --text-dark: #1e2a3a;
+            --text-muted: #6c757d;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --transition: all 0.2s ease;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--gray-bg);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            background: var(--primary);
+            color: white;
+            transition: width 0.3s ease, transform 0.3s ease;
+            z-index: 1050;
+            overflow-y: auto;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.1);
+        }
+        .sidebar.minimized {
+            width: 80px;
+        }
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             padding: 1rem;
-            border-radius: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .sidebar-header h4 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .sidebar.minimized .sidebar-header h4 {
+            display: none;
+        }
+        .sidebar.minimized .sidebar-header {
+            justify-content: center;
+            padding: 1rem 0;
+        }
+        .sidebar-toggle-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 0 5px;
+            line-height: 1;
+        }
+        .btn-close-white {
+            filter: brightness(0) invert(1);
+        }
+        .sidebar .nav {
+            padding: 1rem 0;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.85);
+            padding: 12px 20px;
+            border-radius: 0;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            white-space: nowrap;
+        }
+        .sidebar .nav-link i {
+            width: 24px;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+        .sidebar .nav-link span {
+            transition: opacity 0.2s;
+        }
+        .sidebar.minimized .nav-link span {
+            display: none;
+        }
+        .sidebar.minimized .nav-link i {
+            margin-right: 0;
+            font-size: 1.5rem;
+            width: 100%;
+        }
+        .sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .sidebar .nav-link.active {
+            background: white;
+            color: var(--primary);
+            font-weight: 600;
+            border-left: 4px solid var(--secondary);
+        }
+        .sidebar .nav-link.active i {
+            color: var(--primary);
+        }
+        .sidebar .nav-link.text-danger {
+            color: #ffb3b3 !important;
+        }
+        .sidebar .nav-link.text-danger:hover {
+            background: rgba(255,255,255,0.1);
+            color: #ff8a8a !important;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+            background: var(--gray-bg);
+        }
+        .sidebar.minimized + .main-content {
+            margin-left: 80px;
+        }
+        .navbar-mobile {
+            display: none;
+            background: white;
+            padding: 12px 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            align-items: center;
+            gap: 15px;
+        }
+        .navbar-mobile h5 {
+            margin: 0;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        .container-fluid {
+            padding: 20px 30px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 991.98px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 260px !important;
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            .sidebar.minimized .sidebar-header h4,
+            .sidebar.minimized .nav-link span {
+                display: inline-block;
+            }
+            .sidebar.minimized .nav-link i {
+                font-size: 1.2rem;
+                width: 24px;
+                text-align: left;
+            }
+            .main-content {
+                margin-left: 0 !important;
+            }
+            .navbar-mobile {
+                display: flex;
+            }
+            .container-fluid {
+                padding: 15px;
+            }
+        }
+
+        /* ===== KOMPONEN KHUSUS ===== */
+        .action-bar {
+            background: white;
+            padding: 1rem;
+            border-radius: var(--border-radius);
             margin-bottom: 1.5rem;
+            box-shadow: var(--box-shadow);
+        }
+        .table th, .table td {
+            vertical-align: middle;
+        }
+        /* Loading Overlay */
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,20,0,0.8);
+            backdrop-filter: blur(5px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            transition: opacity 0.3s;
+        }
+        #loading-overlay .spinner-border {
+            width: 4rem;
+            height: 4rem;
+            border-width: 0.3rem;
         }
     </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-dark bg-success fixed-top shadow">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#"><i class="bi bi-building"></i> Koordinator Masjid Al-Ikhlas</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-        </div>
-    </nav>
-
-    <!-- Sidebar Offcanvas -->
-    <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title">Menu Koordinator</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-        </div>
-        <div class="offcanvas-body">
-            <ul class="nav flex-column">
-                <li class="nav-item"><a class="nav-link" href="dashboard.html"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" href="fitrah.html"><i class="bi bi-archive"></i> Zakat Fitrah</a></li>
-                <li class="nav-item"><a class="nav-link" href="mal.html"><i class="bi bi-cash-stack"></i> Zakat Mal</a></li>
-                <li class="nav-item"><a class="nav-link" href="fidyah.html"><i class="bi bi-heart"></i> Zakat Fidyah</a></li>
-                <li class="nav-item"><a class="nav-link active" href="pezakat.html"><i class="bi bi-people"></i> Data Pezakat</a></li>
-                <li class="nav-item"><a class="nav-link" href="mustahik.html"><i class="bi bi-hand-index-thumb"></i> Data Mustahik</a></li>
-                <li class="nav-item"><a class="nav-link" href="laporan.html"><i class="bi bi-file-text"></i> Laporan</a></li>
-                <li class="nav-item"><a class="nav-link text-danger" href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
-            </ul>
-        </div>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="spinner-border text-light" role="status"></div>
+        <div id="loading-progress" class="mt-3 h4">0%</div>
+        <div id="loading-message" class="mt-2">Memuat data...</div>
     </div>
 
-    <!-- Main Content -->
-    <main class="container mt-5 pt-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="text-success" id="pageTitle">👥 Data Pezakat</h2>
-            <div>
-                <!-- Tombol Undo/Redo & Hapus Terpilih -->
-                <button class="btn btn-secondary me-2" id="undoBtn" onclick="undo()" disabled><i class="bi bi-arrow-return-left"></i> Undo</button>
-                <button class="btn btn-secondary me-2" id="redoBtn" onclick="redo()" disabled><i class="bi bi-arrow-return-right"></i> Redo</button>
-                <button class="btn btn-danger me-2" id="deleteSelectedBtn" onclick="deleteSelected()" disabled><i class="bi bi-trash"></i> Hapus Terpilih</button>
-                <button class="btn btn-success me-2" onclick="tambahData()"><i class="bi bi-plus-circle"></i> Tambah Data</button>
-                <button class="btn btn-info me-2" onclick="exportCSV()"><i class="bi bi-download"></i> Ekspor CSV</button>
-                <button class="btn btn-warning" onclick="document.getElementById('importFile').click()"><i class="bi bi-upload"></i> Impor CSV</button>
-                <input type="file" id="importFile" accept=".csv" style="display: none;" onchange="importCSV(this.files[0])">
-            </div>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="bi bi-building"></i> Koordinator</h4>
+            <button class="sidebar-toggle-btn d-none d-lg-block" onclick="toggleSidebarMinimize()" id="sidebarToggleBtn">
+                <i class="bi bi-arrow-left-circle" id="toggleIcon"></i>
+            </button>
+            <button class="btn-close btn-close-white d-lg-none" onclick="toggleSidebar()"></button>
         </div>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link" href="dashboard.html"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="fitrah.html"><i class="bi bi-archive"></i> <span>Zakat Fitrah</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="mal.html"><i class="bi bi-cash-stack"></i> <span>Zakat Mal</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="fidyah.html"><i class="bi bi-heart"></i> <span>Zakat Fidyah</span></a></li>
+            <li class="nav-item"><a class="nav-link active" href="pezakat.html"><i class="bi bi-people"></i> <span>Data Pezakat</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="mustahik.html"><i class="bi bi-hand-index-thumb"></i> <span>Data Mustahik</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="laporan.html"><i class="bi bi-file-text"></i> <span>Laporan</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="../index.html"><i class="bi bi-house-door"></i> <span>Beranda</span></a></li>
+            <li class="nav-item"><a class="nav-link text-danger" href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> <span>Logout</span></a></li>
+        </ul>
+    </aside>
 
-        <!-- Action Bar: Pencarian -->
-        <div class="action-bar">
-            <div class="row g-3 align-items-center">
-                <div class="col-md-12">
-                    <div class="input-group">
-                        <span class="input-group-text bg-success text-white"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control" id="searchInput" placeholder="Cari nama, alamat, telepon, keterangan..." onkeyup="filterData()">
-                        <button class="btn btn-outline-secondary" type="button" onclick="clearSearch()"><i class="bi bi-x"></i></button>
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <nav class="navbar-mobile">
+            <button class="btn btn-success" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+            <h5>Data Pezakat</h5>
+        </nav>
+
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-success" id="pageTitle">👥 Data Pezakat</h2>
+                <div>
+                    <!-- Tombol Undo/Redo & Hapus Terpilih -->
+                    <button class="btn btn-secondary me-2" id="undoBtn" onclick="undo()" disabled><i class="bi bi-arrow-return-left"></i> Undo</button>
+                    <button class="btn btn-secondary me-2" id="redoBtn" onclick="redo()" disabled><i class="bi bi-arrow-return-right"></i> Redo</button>
+                    <button class="btn btn-danger me-2" id="deleteSelectedBtn" onclick="deleteSelected()" disabled><i class="bi bi-trash"></i> Hapus Terpilih</button>
+                    <button class="btn btn-success me-2" onclick="tambahData()"><i class="bi bi-plus-circle"></i> Tambah Data</button>
+                    <button class="btn btn-info me-2" onclick="exportCSV()"><i class="bi bi-download"></i> Ekspor CSV</button>
+                    <button class="btn btn-warning" onclick="document.getElementById('importFile').click()"><i class="bi bi-upload"></i> Impor CSV</button>
+                    <input type="file" id="importFile" accept=".csv" style="display: none;" onchange="importCSV(this.files[0])">
+                </div>
+            </div>
+
+            <!-- Action Bar: Search only -->
+            <div class="action-bar">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-12">
+                        <div class="input-group">
+                            <span class="input-group-text bg-success text-white"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" id="searchInput" placeholder="Cari nama, alamat, telepon, keterangan..." onkeyup="filterData()">
+                            <button class="btn btn-outline-secondary" type="button" onclick="clearSearch()"><i class="bi bi-x"></i></button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Tabel Data -->
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover align-middle">
-                <thead class="table-success text-center">
-                    <tr>
-                        <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
-                        <th>No</th>
-                        <th>ID</th>
-                        <th>Nama</th>
-                        <th>Alamat</th>
-                        <th>RT</th>
-                        <th>Telepon</th>
-                        <th>Keterangan</th>
-                        <th>Dibuat Oleh</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    <tr><td colspan="10" class="text-center">Memuat data...</td></tr>
-                </tbody>
-            </table>
+            <!-- Tabel Data -->
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-success text-center">
+                        <tr>
+                            <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
+                            <th>No</th>
+                            <th>ID</th>
+                            <th>Nama</th>
+                            <th>Alamat</th>
+                            <th>RT</th>
+                            <th>Telepon</th>
+                            <th>Keterangan</th>
+                            <th>Dibuat Oleh</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr><td colspan="10" class="text-center">Memuat data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
 
@@ -147,20 +355,26 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../js/config.js"></script>
     <script src="../js/api.js"></script>
+    <script src="../js/loader.js"></script>
     <script>
-        // ====================== FUNGSI CACHE ======================
-        function getCachedData(key) {
-            const cached = sessionStorage.getItem(key);
-            if (!cached) return null;
-            try {
-                return JSON.parse(cached);
-            } catch (e) {
-                return null;
-            }
+        // ====================== FUNGSI SIDEBAR ======================
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
         }
 
-        function setCachedData(key, data) {
-            sessionStorage.setItem(key, JSON.stringify(data));
+        function toggleSidebarMinimize() {
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('toggleIcon');
+            sidebar.classList.toggle('minimized');
+            const isMinimized = sidebar.classList.contains('minimized');
+            if (isMinimized) {
+                icon.classList.remove('bi-arrow-left-circle');
+                icon.classList.add('bi-arrow-right-circle');
+            } else {
+                icon.classList.remove('bi-arrow-right-circle');
+                icon.classList.add('bi-arrow-left-circle');
+            }
+            localStorage.setItem('sidebarMinimized', isMinimized);
         }
 
         // ====================== CEK LOGIN ======================
@@ -183,7 +397,7 @@
         const MAX_UNDO_STACK = 10;
 
         function pushToUndo(action, items) {
-            undoStack.push({ action, items: items.map(item => ({ ...item })) }); // salin
+            undoStack.push({ action, items: items.map(item => ({ ...item })) });
             if (undoStack.length > MAX_UNDO_STACK) undoStack.shift();
             redoStack = [];
             updateUndoRedoButtons();
@@ -201,7 +415,7 @@
                 const newIds = [];
                 for (let item of last.items) {
                     const newItem = { ...item };
-                    delete newItem.id; // biarkan client generate id baru
+                    delete newItem.id;
                     newItem.id = 'P' + Date.now() + Math.random().toString(36).substr(2, 5);
                     try {
                         await apiPost('pezakat', newItem);
@@ -215,7 +429,7 @@
                 }
                 last.newIds = newIds;
                 redoStack.push(last);
-                await loadData(); // refresh data
+                await refreshData();
             }
             updateUndoRedoButtons();
         }
@@ -235,7 +449,7 @@
                     }
                 }
                 undoStack.push(last);
-                await loadData(); // refresh data
+                await refreshData();
             }
             updateUndoRedoButtons();
         }
@@ -269,36 +483,26 @@
                 for (let id of ids) {
                     await apiDelete('pezakat', id);
                 }
-                await loadData();
+                await refreshData();
                 alert('Data terpilih berhasil dihapus.');
             } catch (error) {
-                // Jika gagal, batalkan undo stack
                 undoStack.pop();
                 updateUndoRedoButtons();
                 alert('Gagal menghapus beberapa data.');
             }
         }
 
-        // ====================== LOAD DATA ======================
-        async function loadData() {
-            const cacheKey = 'pezakat_' + user.rt;
-            const cached = getCachedData(cacheKey);
-            if (cached) {
-                allData = cached;
-                filterData(); // render tabel
-            }
+        // ====================== FUNGSI REFRESH DATA ======================
+        async function refreshData() {
+            await LOADER.loadMultiple(['pezakat'], true, false);
+            loadDataFromCache();
+        }
 
-            try {
-                const fresh = await apiGet('pezakat', { rt: user.rt });
-                setCachedData(cacheKey, fresh);
-                allData = fresh;
-                filterData(); // render ulang
-            } catch (error) {
-                console.error('Gagal memuat data:', error);
-                if (!cached) {
-                    document.getElementById('tableBody').innerHTML = '<tr><td colspan="10" class="text-center text-danger">Gagal memuat data. Periksa koneksi atau API.</td></tr>';
-                }
-            }
+        // ====================== LOAD DATA PEZAKAT DARI CACHE (filter RT) ======================
+        function loadDataFromCache() {
+            const semuaPezakat = LOADER.getData('pezakat');
+            allData = semuaPezakat.filter(p => p.rt === user.rt);
+            filterData();
         }
 
         // ====================== FILTER ======================
@@ -306,7 +510,6 @@
             const searchText = document.getElementById('searchInput').value.toLowerCase().trim();
 
             filteredData = allData.filter(item => {
-                // Pencarian multi kolom: nama, alamat, telepon, keterangan
                 if (searchText) {
                     const fieldsToSearch = [
                         item.nama || '',
@@ -403,8 +606,8 @@
                     await apiPost('pezakat', data);
                 }
                 modalInstance.hide();
-                await loadData();
-                alert('Data berhasil disimpan (asumsi).');
+                await refreshData();
+                alert('Data berhasil disimpan.');
             } catch (error) {
                 alert('Gagal menyimpan: ' + (error.message || ''));
             }
@@ -420,8 +623,8 @@
 
             try {
                 await apiDelete('pezakat', id);
-                await loadData();
-                alert('Data berhasil dihapus (asumsi).');
+                await refreshData();
+                alert('Data berhasil dihapus.');
             } catch (error) {
                 undoStack.pop();
                 updateUndoRedoButtons();
@@ -512,8 +715,8 @@
                 try {
                     const result = await apiImport('pezakat', rowsToImport);
                     if (result.success) {
-                        alert('Data berhasil diimpor (asumsi).');
-                        await loadData();
+                        alert('Data berhasil diimpor.');
+                        await refreshData();
                     } else {
                         alert('Gagal mengimpor: ' + result.error);
                     }
@@ -538,8 +741,38 @@
 
         // ====================== INIT ======================
         document.addEventListener('DOMContentLoaded', async function() {
+            // Cek status sidebar tersimpan
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('toggleIcon');
+            const isMinimized = localStorage.getItem('sidebarMinimized') === 'true';
+            if (isMinimized) {
+                sidebar.classList.add('minimized');
+                if (icon) {
+                    icon.classList.remove('bi-arrow-left-circle');
+                    icon.classList.add('bi-arrow-right-circle');
+                }
+            }
+
+            const overlay = document.getElementById('loading-overlay');
+            const neededEndpoints = ['pezakat'];
+
+            // Cek apakah data pezakat sudah ada di cache
+            if (LOADER.getData('pezakat').length === 0) {
+                overlay.style.display = 'flex';
+                try {
+                    await LOADER.loadMultiple(neededEndpoints, false, false, (progress, message) => {
+                        document.getElementById('loading-progress').innerText = progress + '%';
+                        document.getElementById('loading-message').innerText = message;
+                    });
+                } catch (e) {
+                    console.error('Gagal memuat data:', e);
+                } finally {
+                    overlay.style.display = 'none';
+                }
+            }
+
             modalInstance = new bootstrap.Modal(document.getElementById('formModal'));
-            loadData();
+            loadDataFromCache();
 
             // Inisialisasi tombol undo/redo
             updateUndoRedoButtons();
