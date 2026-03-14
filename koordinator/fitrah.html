@@ -245,6 +245,15 @@
             height: 4rem;
             border-width: 0.3rem;
         }
+        /* Card mode penyaluran */
+        .muzaki-list {
+            max-height: 200px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        .muzaki-list .form-check {
+            margin-bottom: 0.25rem;
+        }
     </style>
 </head>
 <body>
@@ -356,11 +365,11 @@
             <!-- Konten Mode Penyaluran -->
             <div id="penyaluranModeContainer" style="display: none;">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="mb-0">Mode Penyaluran (Per Mustahik)</h4>
+                    <h4 class="mb-0">Mode Penyaluran (Centang Muzaki yang Tersalurkan)</h4>
                     <div>
                         <label for="sortMustahik" class="form-label me-2">Urutkan:</label>
                         <select id="sortMustahik" class="form-select d-inline-block w-auto" onchange="sortPenyaluranCards()">
-                            <option value="nama">Nama (A-Z)</option>
+                            <option value="nama">Nama Mustahik (A-Z)</option>
                             <option value="rt">RT</option>
                             <option value="jumlah">Jumlah Muzaki</option>
                         </select>
@@ -494,7 +503,6 @@
         // Variabel untuk mode penyaluran
         let penyaluranModeActive = false;
         let previousFilterStatus = 'semua';
-        let mustahikItemsMap = new Map();
 
         // ====================== UNDO/REDO & MULTIPLE DELETE ======================
         let undoStack = [];
@@ -978,7 +986,7 @@
             .catch(err => ({ success: false, error: err.message }));
         }
 
-        // ====================== MODE PENYALURAN ======================
+        // ====================== MODE PENYALURAN (BARU) ======================
         function togglePenyaluranMode() {
             const normalContent = document.getElementById('normalModeContent');
             const penyaluranContainer = document.getElementById('penyaluranModeContainer');
@@ -993,7 +1001,7 @@
                 normalActionButtons.style.display = 'none';
                 toggleBtn.innerHTML = '<i class="bi bi-table"></i> Mode Normal';
                 penyaluranModeActive = true;
-                filterData();
+                filterData(); // akan memanggil renderPenyaluranCards()
             } else {
                 document.getElementById('filterStatus').value = previousFilterStatus;
                 normalContent.style.display = 'block';
@@ -1001,7 +1009,7 @@
                 normalActionButtons.style.display = 'block';
                 toggleBtn.innerHTML = '<i class="bi bi-phone"></i> Mode Penyaluran';
                 penyaluranModeActive = false;
-                filterData();
+                filterData(); // kembali ke tabel
             }
         }
 
@@ -1015,10 +1023,11 @@
             const container = document.getElementById('penyaluranCards');
             if (!container) return;
 
-            const belumData = filteredData;
+            // Ambil data yang belum disalurkan dan sudah punya penerima
+            const belumData = filteredData.filter(item => item.id_mustahik || item.penerima_manual);
 
-            const mustahikMap = new Map();
-            mustahikItemsMap.clear();
+            // Kelompokkan berdasarkan penerima
+            const mustahikGroups = new Map();
 
             belumData.forEach(item => {
                 let mustahikId, mustahikNama, mustahikRt;
@@ -1039,30 +1048,28 @@
                     mustahikNama = item.penerima_manual;
                     mustahikRt = null;
                 } else {
-                    mustahikId = 'belum_ditentukan';
-                    mustahikNama = 'Belum ditentukan';
-                    mustahikRt = null;
+                    return;
                 }
 
-                if (!mustahikMap.has(mustahikId)) {
-                    mustahikMap.set(mustahikId, {
+                if (!mustahikGroups.has(mustahikId)) {
+                    mustahikGroups.set(mustahikId, {
                         id: mustahikId,
                         nama: mustahikNama,
                         rt: mustahikRt,
-                        items: [],
-                        totalBeras: 0
+                        items: []
                     });
                 }
-                const entry = mustahikMap.get(mustahikId);
-                entry.items.push(item);
-                entry.totalBeras += item.beras || 0;
+                const group = mustahikGroups.get(mustahikId);
+                group.items.push({
+                    id: item.id,
+                    nama: item.nama || '-',
+                    beras: item.beras || 0
+                });
             });
 
-            let mustahikArray = Array.from(mustahikMap.values());
-            mustahikArray.forEach(m => {
-                mustahikItemsMap.set(m.id, m.items.map(item => item.id));
-            });
+            let mustahikArray = Array.from(mustahikGroups.values());
 
+            // Urutkan
             const sortBy = document.getElementById('sortMustahik').value;
             if (sortBy === 'nama') {
                 mustahikArray.sort((a, b) => a.nama.localeCompare(b.nama));
@@ -1083,19 +1090,35 @@
             }
 
             let html = '';
-            mustahikArray.forEach(m => {
-                const rtText = m.rt ? `RT ${m.rt}` : 'RT tidak diketahui';
-                const itemCount = m.items.length;
-                const totalBeras = m.totalBeras.toFixed(1);
+            mustahikArray.forEach(group => {
+                const rtText = group.rt ? `RT ${group.rt}` : 'RT tidak diketahui';
+                const itemCount = group.items.length;
+                const totalBeras = group.items.reduce((sum, i) => sum + i.beras, 0).toFixed(1);
+
+                const itemsHtml = group.items.map(item => `
+                    <div class="form-check">
+                        <input class="form-check-input muzaki-checkbox-${group.id}" type="checkbox" value="${item.id}" id="chk_${item.id}">
+                        <label class="form-check-label" for="chk_${item.id}">
+                            ${item.nama} - ${item.beras} kg beras
+                        </label>
+                    </div>
+                `).join('');
+
                 html += `
                 <div class="col-md-6 col-lg-4 mb-3">
-                    <div class="card h-100 shadow-sm">
+                    <div class="card h-100 shadow-sm" data-mustahik-id="${group.id}">
                         <div class="card-body">
-                            <h5 class="card-title">${m.nama}</h5>
+                            <h5 class="card-title">${group.nama}</h5>
                             <p class="card-text mb-1"><small class="text-muted">${rtText}</small></p>
-                            <p class="card-text mb-1">Menerima dari ${itemCount} muzaki: ${totalBeras} kg beras</p>
+                            <p class="card-text mb-2">Total: ${itemCount} muzaki, ${totalBeras} kg beras</p>
                             <hr>
-                            <button class="btn btn-success btn-sm w-100" onclick="selesaikanMustahik('${m.id}')"><i class="bi bi-check-circle"></i> Selesai Dikunjungi</button>
+                            <div class="muzaki-list mb-2">
+                                ${itemsHtml}
+                            </div>
+                            <div class="d-flex justify-content-between mt-2">
+                                <button class="btn btn-outline-primary btn-sm" onclick="centangSemua('${group.id}')"><i class="bi bi-check-all"></i> Centang Semua</button>
+                                <button class="btn btn-success btn-sm" onclick="simpanPenyaluran('${group.id}')"><i class="bi bi-save"></i> Simpan Penyaluran</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1104,27 +1127,40 @@
             container.innerHTML = html;
         }
 
-        async function selesaikanMustahik(mustahikId) {
-            const itemIds = mustahikItemsMap.get(mustahikId);
-            if (!itemIds || itemIds.length === 0) {
-                alert('Tidak ada data terkait.');
+        function centangSemua(mustahikId) {
+            const checkboxes = document.querySelectorAll(`.muzaki-checkbox-${mustahikId}`);
+            checkboxes.forEach(cb => cb.checked = true);
+        }
+
+        async function simpanPenyaluran(mustahikId) {
+            const checkboxes = document.querySelectorAll(`.muzaki-checkbox-${mustahikId}:checked`);
+            if (checkboxes.length === 0) {
+                alert('Tidak ada muzaki yang dipilih.');
                 return;
             }
 
-            if (!confirm(`Tandai ${itemIds.length} muzaki sebagai sudah disalurkan untuk mustahik ini?`)) return;
+            const ids = Array.from(checkboxes).map(cb => cb.value);
+            if (!confirm(`Tandai ${ids.length} muzaki sebagai sudah disalurkan?`)) return;
+
+            const originalBtn = event.target;
+            originalBtn.disabled = true;
+            originalBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Menyimpan...';
 
             try {
                 const tanggalSalur = new Date().toISOString().split('T')[0];
-                for (let id of itemIds) {
+                for (let id of ids) {
                     await apiUpdate('fitrah', id, { 
                         status: 'sudah disalurkan', 
-                        tanggalSalur,
+                        tanggalSalur
                     });
                 }
+                alert('Data berhasil disimpan.');
                 await refreshData();
-                alert('Data berhasil diperbarui.');
             } catch (error) {
-                alert('Gagal: ' + error);
+                alert('Gagal menyimpan: ' + error);
+            } finally {
+                originalBtn.disabled = false;
+                originalBtn.innerHTML = '<i class="bi bi-save"></i> Simpan Penyaluran';
             }
         }
 
