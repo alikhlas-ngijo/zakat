@@ -1,6 +1,7 @@
-// api.js - Versi final dengan peningkatan stabilitas dan penanganan error
-// Mendukung JSONP untuk semua operasi (GET dan POST via action)
-// Dilengkapi logging, validasi respons, timeout, dan kompatibilitas penuh dengan Chrome
+// api.js - Versi final dengan dukungan endpoint getAllData, penanganan error, dan kompatibilitas penuh dengan loader.js
+// - Mendukung JSONP untuk semua operasi (GET dan POST via action)
+// - Dilengkapi logging, validasi respons, timeout, dan kompatibilitas penuh dengan Chrome
+// - Menambahkan fungsi apiGetAllData() untuk mengambil semua data sekaligus (endpoint getAllData)
 // (c) Masjid Al-Ikhlas Ngijo
 
 (function(global) {
@@ -8,6 +9,8 @@
 
     // ====================== KONFIGURASI DEFAULT ======================
     const CONFIG = global.CONFIG || {};
+    // Tingkatkan batas URL untuk mengakomodasi data base64 (misal TTD)
+    const MAX_URL_LENGTH = 4000; // dari sebelumnya 2000
 
     // ====================== FUNGSI INTERNAL JSONP ======================
     /**
@@ -25,6 +28,16 @@
 
             // Generate callback unik
             const callbackName = 'jsonp_cb_' + Date.now() + '_' + Math.random().toString(36).substring(2, 10);
+            const separator = url.includes('?') ? '&' : '?';
+            const fullUrl = url + separator + 'callback=' + encodeURIComponent(callbackName);
+
+            // Cek panjang URL (kritis untuk data besar seperti base64)
+            if (fullUrl.length > MAX_URL_LENGTH) {
+                console.error('URL terlalu panjang:', fullUrl.length, 'karakter');
+                reject(new Error('Data terlalu besar untuk dikirim via JSONP. Kurangi ukuran tanda tangan (misal perkecil canvas atau turunkan kualitas gambar).'));
+                return;
+            }
+
             const script = document.createElement('script');
             let timeoutId = setTimeout(() => {
                 cleanup();
@@ -56,9 +69,15 @@
                                 reject(new Error(response.error || 'Operasi gagal di server'));
                             }
                         } else {
-                            // Respons tidak memiliki properti success, asumsikan data langsung
-                            console.warn('⚠️ Respons JSONP tidak memiliki properti success, menggunakan respons langsung:', response);
-                            resolve(response);
+                            // Respons tidak memiliki properti success
+                            // Periksa apakah ada properti 'error' (misal { error: "..." })
+                            if (response.error) {
+                                reject(new Error(response.error));
+                            } else {
+                                // Tidak ada success dan tidak ada error, kemungkinan data langsung
+                                console.warn('⚠️ Respons JSONP tidak memiliki properti success atau error, menggunakan respons langsung:', response);
+                                resolve(response);
+                            }
                         }
                     } else if (response === null || response === undefined) {
                         reject(new Error('Respons kosong dari server'));
@@ -71,9 +90,6 @@
                 }
             };
 
-            // Tambahkan callback ke URL
-            const separator = url.includes('?') ? '&' : '?';
-            const fullUrl = url + separator + 'callback=' + encodeURIComponent(callbackName);
             console.log('📤 JSONP Request [' + callbackName + ']:', fullUrl);
 
             script.src = fullUrl;
@@ -117,6 +133,28 @@
     }
 
     /**
+     * Fungsi untuk mengambil semua data sekaligus (menggunakan endpoint getAllData)
+     * @returns {Promise<Object>} Objek dengan properti per sheet
+     */
+    function apiGetAllData() {
+        if (!CONFIG || !CONFIG.API_URL) {
+            return Promise.reject(new Error('API_URL tidak dikonfigurasi. Pastikan config.js dimuat dengan benar.'));
+        }
+        const url = `${CONFIG.API_URL}?endpoint=getAllData`;
+        return jsonpRequest(url).then(response => {
+            // response diharapkan berupa { success: true, data: { ... } } atau langsung data
+            if (response && typeof response === 'object') {
+                if (response.success === true && response.data) {
+                    return response.data;
+                }
+                // Jika tidak ada properti success, asumsikan response langsung data
+                return response;
+            }
+            return {};
+        });
+    }
+
+    /**
      * Fungsi untuk operasi yang mengubah data via JSONP (GET dengan parameter action)
      * @param {string} action 'add', 'edit', 'update', 'delete', 'import', 'absen', dll
      * @param {string} endpoint Nama sheet/endpoint (bisa kosong untuk action tertentu seperti absen)
@@ -142,6 +180,10 @@
         // Stringify data
         try {
             const dataStr = JSON.stringify(data);
+            // Peringatan jika data terlalu besar
+            if (dataStr.length > 1500) {
+                console.warn('Data JSON sangat besar (' + dataStr.length + ' karakter). Pastikan tidak melebihi batas URL.');
+            }
             url += `&data=${encodeURIComponent(dataStr)}`;
         } catch (e) {
             return Promise.reject(new Error('Gagal mengkonversi data ke JSON: ' + e.message));
@@ -269,6 +311,7 @@
 
     // ====================== EKSPOR KE GLOBAL ======================
     global.apiGet = apiGet;
+    global.apiGetAllData = apiGetAllData;
     global.apiPostJSONP = apiPostJSONP;
     global.apiPost = apiPost;
     global.apiEdit = apiEdit;
@@ -283,6 +326,7 @@
     if (typeof module !== 'undefined' && module.exports) {
         module.exports = {
             apiGet,
+            apiGetAllData,
             apiPostJSONP,
             apiPost,
             apiEdit,
@@ -295,5 +339,5 @@
         };
     }
 
-    console.log('✅ api.js loaded. Fungsi API siap digunakan.');
+    console.log('✅ api.js v33.1 loaded. Fungsi API siap digunakan.');
 })(window);
