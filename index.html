@@ -158,6 +158,46 @@
             margin-top: 1rem;
             font-weight: 600;
         }
+        /* Floating WhatsApp Button */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+        .whatsapp-float .btn-wa {
+            background-color: #25d366;
+            color: white;
+            border-radius: 50px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: none;
+        }
+        .whatsapp-float .btn-wa:hover {
+            background-color: #20ba5a;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+            color: white;
+        }
+        .whatsapp-float .btn-wa i {
+            font-size: 24px;
+        }
+        /* Untuk layar kecil */
+        @media (max-width: 576px) {
+            .whatsapp-float .btn-wa {
+                padding: 10px 18px;
+                font-size: 14px;
+            }
+            .whatsapp-float .btn-wa i {
+                font-size: 20px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -222,7 +262,7 @@
             <div class="row align-items-center g-5">
                 <div class="col-lg-6" data-aos="fade-right">
                     <h2 class="section-title text-start">Tentang Kami</h2>
-                    <p class="fs-5 text-secondary">Masjid Al-Ikhlas Ngijo berdiri sejak 1993 sebagai pusat ibadah dan pemberdayaan umat. Kami mengelola zakat, infak, dan sedekah secara profesional untuk kesejahteraan masyarakat.</p>
+                    <p class="fs-5 text-secondary">Masjid Al-Ikhlas Ngijo berdiri sejak 1990 sebagai pusat ibadah dan pemberdayaan umat. Kami mengelola zakat, infak, dan sedekah secara profesional untuk kesejahteraan masyarakat.</p>
                     <p class="mt-4"><i class="bi bi-check-circle-fill text-success me-2"></i> Transparan dalam laporan keuangan</p>
                     <p><i class="bi bi-check-circle-fill text-success me-2"></i> Tepat sasaran kepada mustahik</p>
                     <p><i class="bi bi-check-circle-fill text-success me-2"></i> Digitalisasi pengelolaan zakat</p>
@@ -439,6 +479,50 @@
         </div>
     </div>
 
+    <!-- Modal WhatsApp Form -->
+    <div class="modal fade" id="waModal" tabindex="-1" aria-labelledby="waModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="waModalLabel">Hubungi Admin Zakat</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="waForm">
+                        <div class="mb-3">
+                            <label for="waNama" class="form-label">Nama Lengkap</label>
+                            <input type="text" class="form-control" id="waNama" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="waAlamat" class="form-label">Alamat</label>
+                            <textarea class="form-control" id="waAlamat" rows="2" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="waPertanyaan" class="form-label">Pertanyaan</label>
+                            <textarea class="form-control" id="waPertanyaan" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="waVerifikasi" required>
+                            <label class="form-check-label" for="waVerifikasi">Saya yakin data yang diisi benar</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-success" onclick="kirimWA()">Kirim ke WhatsApp</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating WhatsApp Button (pemicu modal) -->
+    <div class="whatsapp-float">
+        <button type="button" class="btn btn-wa" data-bs-toggle="modal" data-bs-target="#waModal">
+            <i class="bi bi-whatsapp"></i>
+            <span>Admin Zakat</span>
+        </button>
+    </div>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
@@ -563,6 +647,33 @@
 
         window.addEventListener('scroll', setActiveNav);
         window.addEventListener('load', setActiveNav);
+
+        // Fungsi kirim WhatsApp dari modal
+        function kirimWA() {
+            const nama = document.getElementById('waNama').value.trim();
+            const alamat = document.getElementById('waAlamat').value.trim();
+            const pertanyaan = document.getElementById('waPertanyaan').value.trim();
+            const verifikasi = document.getElementById('waVerifikasi').checked;
+
+            if (!nama || !alamat || !pertanyaan || !verifikasi) {
+                alert('Harap isi semua kolom dan centang verifikasi.');
+                return;
+            }
+
+            // Format pesan
+            const pesan = `Nama: ${nama}%0AAlamat: ${alamat}%0APertanyaan: ${pertanyaan}`;
+            const waUrl = `https://wa.me/6283866675521?text=${pesan}`;
+            
+            // Buka WhatsApp
+            window.open(waUrl, '_blank');
+
+            // Tutup modal (opsional)
+            const modal = bootstrap.Modal.getInstance(document.getElementById('waModal'));
+            modal.hide();
+
+            // Reset form
+            document.getElementById('waForm').reset();
+        }
     </script>
 </body>
 </html>
