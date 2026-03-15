@@ -34,13 +34,11 @@
             background-color: #1e3b24;
             border-color: #1e3b24;
         }
-        .btn-outline-danger {
-            border-color: #dc3545;
-            color: #dc3545;
-        }
-        .btn-outline-danger:hover {
-            background-color: #dc3545;
-            color: white;
+        /* Navbar active state */
+        .navbar-nav .nav-link.active {
+            color: #2f5d3a !important;
+            font-weight: 700;
+            border-bottom: 3px solid #f4c542;
         }
         .hero {
             min-height: 100vh;
@@ -146,6 +144,20 @@
         #countdown span {
             line-height: 1.2;
         }
+        /* Kalkulator */
+        .calc-card {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 1.5rem;
+            height: 100%;
+        }
+        .result-box {
+            background: #e9ecef;
+            border-radius: 10px;
+            padding: 0.75rem;
+            margin-top: 1rem;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -166,18 +178,9 @@
                     <li class="nav-item"><a class="nav-link" href="#tentang">Tentang</a></li>
                     <li class="nav-item"><a class="nav-link" href="#zakat">Zakat</a></li>
                     <li class="nav-item"><a class="nav-link" href="#statistik">Statistik</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#kalkulator">Kalkulator</a></li>
                     <li class="nav-item"><a class="nav-link" href="#kontak">Kontak</a></li>
-                    <!-- Menu untuk user yang belum login -->
-                    <li class="nav-item" id="loginNavItem">
-                        <a class="btn btn-success ms-lg-3 px-4" href="login.html">Login</a>
-                    </li>
-                    <!-- Menu untuk user yang sudah login (awalnya disembunyikan) -->
-                    <li class="nav-item" id="dashboardNavItem" style="display: none;">
-                        <a class="btn btn-success ms-lg-3 px-4" href="#" id="dashboardLink">Dashboard</a>
-                    </li>
-                    <li class="nav-item" id="logoutNavItem" style="display: none;">
-                        <button class="btn btn-outline-danger ms-lg-2 px-4" onclick="logout()">Logout</button>
-                    </li>
+                    <li class="nav-item"><a class="btn btn-success ms-lg-3 px-4" href="login.html">Login</a></li>
                 </ul>
             </div>
         </div>
@@ -206,7 +209,7 @@
                         <span id="seconds" class="fs-1 fw-bold">00</span><br>Detik
                     </div>
                 </div>
-                <p class="mt-2 small opacity-75">*Batas akhir: 18 Maret 2026 pukul 16.00 WIB</p>
+                <p class="mt-2 small opacity-75">*Batas akhir: 19 Maret 2026 pukul 16.00 WIB</p>
             </div>
 
             <a href="#zakat" class="btn btn-warning btn-lg px-5 py-3 fw-semibold mt-4">Info Zakat</a>
@@ -246,7 +249,7 @@
                             </div>
                             <h4 class="card-title fw-bold">Zakat Fitrah</h4>
                             <p class="card-text">Beras 2,6 kg <br> atau uang senilai <strong>Rp36.000,-</strong> per jiwa.</p>
-                            <a href="#" class="btn btn-sm btn-outline-warning">Bayar Sekarang</a>
+                            <a href="#kalkulator" class="btn btn-sm btn-outline-warning">Kalkulator</a>
                         </div>
                     </div>
                 </div>
@@ -259,7 +262,7 @@
                             </div>
                             <h4 class="card-title fw-bold">Zakat Mal</h4>
                             <p class="card-text">2,5% dari harta yang mencapai nisab (85 gram emas).</p>
-                            <a href="#" class="btn btn-sm btn-outline-success">Kalkulator</a>
+                            <a href="#kalkulator" class="btn btn-sm btn-outline-success">Kalkulator</a>
                         </div>
                     </div>
                 </div>
@@ -326,8 +329,66 @@
         </div>
     </section>
 
+    <!-- Kalkulator Zakat -->
+    <section id="kalkulator" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="section-title text-center">Kalkulator Zakat</h2>
+            <div class="row g-4">
+                <!-- Zakat Fitrah -->
+                <div class="col-md-4" data-aos="fade-up">
+                    <div class="calc-card shadow">
+                        <h4 class="fw-bold mb-3"><i class="bi bi-archive text-warning me-2"></i>Zakat Fitrah</h4>
+                        <p class="text-secondary">2,6 kg beras/orang atau Rp36.000/orang</p>
+                        <div class="mb-3">
+                            <label class="form-label">Jumlah Jiwa</label>
+                            <input type="number" id="fitrahJiwa" class="form-control" value="1" min="1">
+                        </div>
+                        <button class="btn btn-warning w-100" onclick="hitungFitrah()">Hitung</button>
+                        <div class="result-box mt-3" id="hasilFitrah">
+                            <span>Beras: 2,6 kg | Uang: Rp36.000</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Fidyah -->
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="calc-card shadow">
+                        <h4 class="fw-bold mb-3"><i class="bi bi-calendar-day text-info me-2"></i>Fidyah</h4>
+                        <p class="text-secondary">0,7 kg beras/hari puasa yang ditinggalkan</p>
+                        <div class="mb-3">
+                            <label class="form-label">Jumlah Hari</label>
+                            <input type="number" id="fidyahHari" class="form-control" value="1" min="1">
+                        </div>
+                        <button class="btn btn-info w-100" onclick="hitungFidyah()">Hitung</button>
+                        <div class="result-box mt-3" id="hasilFidyah">
+                            <span>Beras: 0,7 kg</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Zakat Mal -->
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="calc-card shadow">
+                        <h4 class="fw-bold mb-3"><i class="bi bi-cash-stack text-success me-2"></i>Zakat Mal</h4>
+                        <p class="text-secondary">Nisab 85 gram emas, kadar 2,5%</p>
+                        <div class="mb-2">
+                            <label class="form-label">Total Harta (Rp)</label>
+                            <input type="number" id="malHarta" class="form-control" value="10000000" min="0">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Harga Emas per Gram (Rp)</label>
+                            <input type="number" id="malEmas" class="form-control" value="1000000" min="0">
+                        </div>
+                        <button class="btn btn-success w-100" onclick="hitungMal()">Hitung</button>
+                        <div class="result-box mt-3" id="hasilMal">
+                            <span>Belum mencapai nisab</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Kontak -->
-    <section id="kontak" class="py-5 bg-light">
+    <section id="kontak" class="py-5">
         <div class="container">
             <h2 class="section-title text-center">Hubungi Kami</h2>
             <div class="row g-5">
@@ -388,40 +449,6 @@
     <script>
         AOS.init({ duration: 1000, once: true });
 
-        // Cek status login dan sesuaikan menu navbar
-        (function() {
-            const user = JSON.parse(localStorage.getItem('user'));
-            const loginItem = document.getElementById('loginNavItem');
-            const dashboardItem = document.getElementById('dashboardNavItem');
-            const logoutItem = document.getElementById('logoutNavItem');
-            const dashboardLink = document.getElementById('dashboardLink');
-
-            if (user && (user.role === 'admin' || user.role === 'koordinator')) {
-                // Sembunyikan login, tampilkan dashboard & logout
-                loginItem.style.display = 'none';
-                dashboardItem.style.display = 'block';
-                logoutItem.style.display = 'block';
-
-                // Set link dashboard sesuai role
-                if (user.role === 'admin') {
-                    dashboardLink.href = 'admin/dashboard.html';
-                } else if (user.role === 'koordinator') {
-                    dashboardLink.href = 'koordinator/dashboard.html';
-                }
-            } else {
-                // Tampilkan login, sembunyikan dashboard & logout
-                loginItem.style.display = 'block';
-                dashboardItem.style.display = 'none';
-                logoutItem.style.display = 'none';
-            }
-        })();
-
-        // Fungsi logout global
-        function logout() {
-            localStorage.removeItem('user');
-            location.reload();
-        }
-
         async function updatePublicStats() {
             try {
                 await LOADER.loadAllData(false);
@@ -447,7 +474,7 @@
 
         updatePublicStats();
 
-        // Countdown Timer Zakat Fitrah - Batas 18 Maret 2026 16:00 WIB
+        // Countdown Timer Zakat Fitrah - Batas 19 Maret 2026 16:00 WIB
         function startCountdown(targetDate) {
             function updateCountdown() {
                 const now = new Date().getTime();
@@ -476,9 +503,66 @@
             setInterval(updateCountdown, 1000);
         }
 
-        // Set target: 18 Maret 2026 16:00 WIB (UTC+7)
-        const targetDate = new Date('2026-03-18T16:00:00+07:00').getTime();
+        // Set target: 19 Maret 2026 16:00 WIB (UTC+7)
+        const targetDate = new Date('2026-03-19T16:00:00+07:00').getTime();
         startCountdown(targetDate);
+
+        // Fungsi Kalkulator
+        function hitungFitrah() {
+            let jiwa = parseFloat(document.getElementById('fitrahJiwa').value) || 0;
+            if (jiwa < 0) jiwa = 0;
+            const beras = (jiwa * 2.6).toFixed(1);
+            const uang = jiwa * 36000;
+            document.getElementById('hasilFitrah').innerHTML = `<span>Beras: ${beras} kg | Uang: Rp${uang.toLocaleString()}</span>`;
+        }
+
+        function hitungFidyah() {
+            let hari = parseFloat(document.getElementById('fidyahHari').value) || 0;
+            if (hari < 0) hari = 0;
+            const beras = (hari * 0.7).toFixed(1);
+            document.getElementById('hasilFidyah').innerHTML = `<span>Beras: ${beras} kg</span>`;
+        }
+
+        function hitungMal() {
+            let harta = parseFloat(document.getElementById('malHarta').value) || 0;
+            let hargaEmas = parseFloat(document.getElementById('malEmas').value) || 0;
+            if (harta < 0) harta = 0;
+            if (hargaEmas < 0) hargaEmas = 0;
+
+            const nisab = 85 * hargaEmas;
+            if (harta >= nisab) {
+                const zakat = harta * 0.025;
+                document.getElementById('hasilMal').innerHTML = `<span>Nisab: Rp${nisab.toLocaleString()}<br>Zakat: Rp${zakat.toLocaleString()}</span>`;
+            } else {
+                document.getElementById('hasilMal').innerHTML = `<span>Belum mencapai nisab (minimal Rp${nisab.toLocaleString()})</span>`;
+            }
+        }
+
+        // Navbar active state based on scroll
+        function setActiveNav() {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+            
+            let currentSection = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 100; // offset untuk navbar fixed
+                const sectionBottom = sectionTop + section.offsetHeight;
+                if (window.scrollY >= sectionTop && window.scrollY < sectionBottom) {
+                    currentSection = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                const href = link.getAttribute('href');
+                if (href && href.includes(currentSection) && !link.classList.contains('btn')) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', setActiveNav);
+        window.addEventListener('load', setActiveNav);
     </script>
 </body>
 </html>
