@@ -245,6 +245,24 @@
             height: 4rem;
             border-width: 0.3rem;
         }
+        /* === Tambahan untuk memperindah grup tombol === */
+        .btn-group {
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .btn-group .btn {
+            border: none;
+            padding: 0.5rem 1rem;
+        }
+        .btn-group .btn:hover {
+            filter: brightness(95%);
+        }
+        @media (max-width: 576px) {
+            .btn-group .btn {
+                padding: 0.5rem 0.75rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -285,22 +303,50 @@
         </nav>
 
         <div class="container-fluid">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="text-success" id="pageTitle">📋 Data Distribusi Zakat Fitrah</h2>
-                <div>
-                    <!-- Tombol Undo/Redo & Hapus Terpilih -->
-                    <button class="btn btn-secondary me-2" id="undoBtn" onclick="undo()" disabled><i class="bi bi-arrow-return-left"></i> Undo</button>
-                    <button class="btn btn-secondary me-2" id="redoBtn" onclick="redo()" disabled><i class="bi bi-arrow-return-right"></i> Redo</button>
-                    <button class="btn btn-danger me-2" id="deleteSelectedBtn" onclick="deleteSelected()" disabled><i class="bi bi-trash"></i> Hapus Terpilih</button>
-                    <button class="btn btn-success me-2" onclick="tambahData()"><i class="bi bi-plus-circle"></i> Tambah Data</button>
-                    <button class="btn btn-info me-2" onclick="exportCSV()"><i class="bi bi-download"></i> Ekspor CSV</button>
-                    <button class="btn btn-primary me-2" onclick="bukaModalMassal()"><i class="bi bi-check-all"></i> Penyaluran Massal</button>
-                    <button class="btn btn-warning" onclick="document.getElementById('importFile').click()"><i class="bi bi-upload"></i> Impor CSV</button>
-                    <input type="file" id="importFile" accept=".csv" style="display: none;" onchange="importCSV(this.files[0])">
+            <!-- Header dengan tombol aksi (TATA LETAK BARU) -->
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
+                <h2 class="text-success me-auto" id="pageTitle">📋 Data Distribusi Zakat Fitrah</h2>
+
+                <!-- Grup Undo/Redo -->
+                <div class="btn-group" role="group">
+                    <button class="btn btn-outline-secondary" id="undoBtn" onclick="undo()" disabled title="Undo">
+                        <i class="bi bi-arrow-return-left"></i> <span class="d-none d-md-inline">Undo</span>
+                    </button>
+                    <button class="btn btn-outline-secondary" id="redoBtn" onclick="redo()" disabled title="Redo">
+                        <i class="bi bi-arrow-return-right"></i> <span class="d-none d-md-inline">Redo</span>
+                    </button>
                 </div>
+
+                <!-- Grup Aksi Data: Tambah & Hapus Terpilih -->
+                <div class="btn-group" role="group">
+                    <button class="btn btn-success" onclick="tambahData()" title="Tambah Data">
+                        <i class="bi bi-plus-circle"></i> <span class="d-none d-md-inline">Tambah</span>
+                    </button>
+                    <button class="btn btn-danger" id="deleteSelectedBtn" onclick="deleteSelected()" disabled title="Hapus Terpilih">
+                        <i class="bi bi-trash"></i> <span class="d-none d-md-inline">Hapus</span>
+                    </button>
+                </div>
+
+                <!-- Grup Ekspor/Impor CSV -->
+                <div class="btn-group" role="group">
+                    <button class="btn btn-info" onclick="exportCSV()" title="Ekspor CSV">
+                        <i class="bi bi-download"></i> <span class="d-none d-md-inline">Ekspor</span>
+                    </button>
+                    <button class="btn btn-warning" onclick="document.getElementById('importFile').click()" title="Impor CSV">
+                        <i class="bi bi-upload"></i> <span class="d-none d-md-inline">Impor</span>
+                    </button>
+                </div>
+
+                <!-- Tombol Penyaluran Massal -->
+                <button class="btn btn-primary" onclick="bukaModalMassal()" title="Penyaluran Massal">
+                    <i class="bi bi-check-all"></i> <span class="d-none d-md-inline">Massal</span>
+                </button>
+
+                <!-- Input file tersembunyi untuk impor -->
+                <input type="file" id="importFile" accept=".csv" style="display: none;" onchange="importCSV(this.files[0])">
             </div>
 
-            <!-- Action Bar: Filter Status + Search -->
+            <!-- Action Bar: Filter Status + Search (tanpa RT) -->
             <div class="action-bar">
                 <div class="row g-3 align-items-center">
                     <div class="col-md-3">
@@ -427,7 +473,7 @@
         </div>
     </div>
 
-    <!-- Modal Penyaluran Massal -->
+    <!-- Modal Penyaluran Massal dengan Sorting -->
     <div class="modal fade" id="massalModal" tabindex="-1" aria-labelledby="massalModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -437,6 +483,24 @@
                 </div>
                 <div class="modal-body">
                     <p>Centang pada baris yang ingin ditandai sebagai <strong>Sudah Disalurkan</strong>. Klik Simpan untuk memperbarui semua data.</p>
+                    <!-- Bagian Sorting -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label>Urutkan berdasarkan:</label>
+                            <select class="form-select form-select-sm" id="sortMassal" onchange="sortMassalTable()">
+                                <option value="nama">Nama</option>
+                                <option value="jiwa">Jumlah Jiwa</option>
+                                <option value="beras">Total Beras</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label>&nbsp;</label>
+                            <select class="form-select form-select-sm" id="sortOrderMassal" onchange="sortMassalTable()">
+                                <option value="asc">Ascending</option>
+                                <option value="desc">Descending</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="table-responsive">
                         <table class="table table-bordered table-sm">
                             <thead class="table-success">
@@ -463,9 +527,9 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/zakat/js/config.js"></script>
-    <script src="/zakat/js/api.js"></script>
-    <script src="/zakat/js/loader.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/loader.js"></script>
     <script>
         // ====================== FUNGSI SIDEBAR ======================
         function toggleSidebar() {
@@ -983,27 +1047,64 @@
             .catch(err => ({ success: false, error: err.message }));
         }
 
-        // ====================== PENYALURAN MASSAL ======================
-        function bukaModalMassal() {
+        // ====================== PENYALURAN MASSAL dengan SORTING ======================
+        function renderMassalTable() {
+            const sortBy = document.getElementById('sortMassal').value;
+            const sortOrder = document.getElementById('sortOrderMassal').value;
+            
+            let data = [...filteredData];
+            
+            data.sort((a, b) => {
+                let valA, valB;
+                if (sortBy === 'nama') {
+                    valA = a.nama || '';
+                    valB = b.nama || '';
+                } else if (sortBy === 'jiwa') {
+                    valA = a.jiwa || 0;
+                    valB = b.jiwa || 0;
+                } else if (sortBy === 'beras') {
+                    valA = a.beras || 0;
+                    valB = b.beras || 0;
+                }
+                
+                if (typeof valA === 'string') {
+                    valA = valA.toLowerCase();
+                    valB = valB.toLowerCase();
+                }
+                
+                if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+                if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+                return 0;
+            });
+            
             const tbody = document.getElementById('massalTableBody');
-            if (!filteredData.length) {
+            if (!data.length) {
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center">Tidak ada data.</td></tr>';
-            } else {
-                tbody.innerHTML = filteredData.map((item, index) => {
-                    const status = item.status || 'belum disalurkan';
-                    const checked = status === 'sudah disalurkan' ? 'checked' : '';
-                    return `
-                    <tr>
-                        <td>${index+1}</td>
-                        <td>${item.nama || '-'}</td>
-                        <td class="text-center">${item.jiwa || 0}</td>
-                        <td class="text-center">${item.beras || 0}</td>
-                        <td class="text-center">
-                            <input type="checkbox" class="massal-checkbox" data-id="${item.id}" ${checked}>
-                        </td>
-                    </tr>
-                `}).join('');
+                return;
             }
+            
+            tbody.innerHTML = data.map((item, index) => {
+                const status = item.status || 'belum disalurkan';
+                const checked = status === 'sudah disalurkan' ? 'checked' : '';
+                return `
+                <tr>
+                    <td>${index+1}</td>
+                    <td>${item.nama || '-'}</td>
+                    <td class="text-center">${item.jiwa || 0}</td>
+                    <td class="text-center">${item.beras || 0}</td>
+                    <td class="text-center">
+                        <input type="checkbox" class="massal-checkbox" data-id="${item.id}" ${checked}>
+                    </td>
+                </tr>
+            `}).join('');
+        }
+
+        function sortMassalTable() {
+            renderMassalTable();
+        }
+
+        function bukaModalMassal() {
+            renderMassalTable();
             massalModalInstance.show();
         }
 
@@ -1031,7 +1132,6 @@
             try {
                 for (let u of updates) {
                     const tanggalSalur = u.newStatus === 'sudah disalurkan' ? new Date().toISOString().split('T')[0] : '';
-                    // Saat menyalurkan, penerima dikosongkan (bisa diisi manual nanti)
                     await apiUpdate('fitrah', u.id, { 
                         status: u.newStatus,
                         tanggalSalur: tanggalSalur,
@@ -1049,7 +1149,6 @@
 
         // ====================== INIT ======================
         document.addEventListener('DOMContentLoaded', async function() {
-            // Cek status sidebar tersimpan
             const sidebar = document.getElementById('sidebar');
             const icon = document.getElementById('toggleIcon');
             const isMinimized = localStorage.getItem('sidebarMinimized') === 'true';
@@ -1064,7 +1163,6 @@
             const overlay = document.getElementById('loading-overlay');
             const neededEndpoints = ['fitrah', 'mustahik', 'settings'];
 
-            // Cek apakah data yang diperlukan sudah ada di cache
             const needLoad = neededEndpoints.filter(ep => !LOADER.getData(ep).length);
             if (needLoad.length > 0) {
                 overlay.style.display = 'flex';
@@ -1088,7 +1186,6 @@
             loadMustahikFromCache();
             loadDataFromCache();
 
-            // Inisialisasi tombol undo/redo
             updateUndoRedoButtons();
         });
     </script>

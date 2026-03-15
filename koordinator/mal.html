@@ -245,6 +245,24 @@
             height: 4rem;
             border-width: 0.3rem;
         }
+        /* === Tambahan untuk memperindah grup tombol === */
+        .btn-group {
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .btn-group .btn {
+            border: none;
+            padding: 0.5rem 1rem;
+        }
+        .btn-group .btn:hover {
+            filter: brightness(95%);
+        }
+        @media (max-width: 576px) {
+            .btn-group .btn {
+                padding: 0.5rem 0.75rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -285,18 +303,42 @@
         </nav>
 
         <div class="container-fluid">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="text-success">💰 Data Zakat Mal</h2>
-                <div>
-                    <!-- Tombol Undo/Redo & Hapus Terpilih -->
-                    <button class="btn btn-secondary me-2" id="undoBtn" onclick="undo()" disabled><i class="bi bi-arrow-return-left"></i> Undo</button>
-                    <button class="btn btn-secondary me-2" id="redoBtn" onclick="redo()" disabled><i class="bi bi-arrow-return-right"></i> Redo</button>
-                    <button class="btn btn-danger me-2" id="deleteSelectedBtn" onclick="deleteSelected()" disabled><i class="bi bi-trash"></i> Hapus Terpilih</button>
-                    <button class="btn btn-success me-2" onclick="tambahData()"><i class="bi bi-plus-circle"></i> Tambah Data</button>
-                    <button class="btn btn-info me-2" onclick="exportCSV()"><i class="bi bi-download"></i> Ekspor CSV</button>
-                    <button class="btn btn-warning" onclick="document.getElementById('importFile').click()"><i class="bi bi-upload"></i> Impor CSV</button>
-                    <input type="file" id="importFile" accept=".csv" style="display: none;" onchange="importCSV(this.files[0])">
+            <!-- Header dengan tombol aksi (TATA LETAK BARU) -->
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
+                <h2 class="text-success me-auto">💰 Data Zakat Mal</h2>
+
+                <!-- Grup Undo/Redo -->
+                <div class="btn-group" role="group">
+                    <button class="btn btn-outline-secondary" id="undoBtn" onclick="undo()" disabled title="Undo">
+                        <i class="bi bi-arrow-return-left"></i> <span class="d-none d-md-inline">Undo</span>
+                    </button>
+                    <button class="btn btn-outline-secondary" id="redoBtn" onclick="redo()" disabled title="Redo">
+                        <i class="bi bi-arrow-return-right"></i> <span class="d-none d-md-inline">Redo</span>
+                    </button>
                 </div>
+
+                <!-- Grup Aksi Data: Tambah & Hapus Terpilih -->
+                <div class="btn-group" role="group">
+                    <button class="btn btn-success" onclick="tambahData()" title="Tambah Data">
+                        <i class="bi bi-plus-circle"></i> <span class="d-none d-md-inline">Tambah</span>
+                    </button>
+                    <button class="btn btn-danger" id="deleteSelectedBtn" onclick="deleteSelected()" disabled title="Hapus Terpilih">
+                        <i class="bi bi-trash"></i> <span class="d-none d-md-inline">Hapus</span>
+                    </button>
+                </div>
+
+                <!-- Grup Ekspor/Impor CSV -->
+                <div class="btn-group" role="group">
+                    <button class="btn btn-info" onclick="exportCSV()" title="Ekspor CSV">
+                        <i class="bi bi-download"></i> <span class="d-none d-md-inline">Ekspor</span>
+                    </button>
+                    <button class="btn btn-warning" onclick="document.getElementById('importFile').click()" title="Impor CSV">
+                        <i class="bi bi-upload"></i> <span class="d-none d-md-inline">Impor</span>
+                    </button>
+                </div>
+
+                <!-- Input file tersembunyi untuk impor -->
+                <input type="file" id="importFile" accept=".csv" style="display: none;" onchange="importCSV(this.files[0])">
             </div>
 
             <!-- Action Bar: Filter Status + Search -->
