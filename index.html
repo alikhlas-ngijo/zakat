@@ -34,7 +34,6 @@
             background-color: #1e3b24;
             border-color: #1e3b24;
         }
-        /* Navbar active state */
         .navbar-nav .nav-link.active {
             color: #2f5d3a !important;
             font-weight: 700;
@@ -105,7 +104,6 @@
             width: 30px;
             color: #2f5d3a;
         }
-        /* Gaya untuk thumbnail flyer */
         .flyer-thumb {
             width: 100%;
             height: 180px;
@@ -117,12 +115,10 @@
         .flyer-thumb:hover {
             transform: scale(1.03);
         }
-        /* Modal gambar */
         .modal-img {
             width: 100%;
             height: auto;
         }
-        /* Ikon bulat konsisten */
         .rounded-circle {
             width: 80px;
             height: 80px;
@@ -135,7 +131,6 @@
         .card-body {
             padding: 1.5rem;
         }
-        /* Timer container responsive */
         .timer-container .bg-dark {
             background-color: rgba(0,0,0,0.5) !important;
             backdrop-filter: blur(4px);
@@ -144,7 +139,6 @@
         #countdown span {
             line-height: 1.2;
         }
-        /* Kalkulator */
         .calc-card {
             background: #f8f9fa;
             border-radius: 20px;
@@ -158,7 +152,6 @@
             margin-top: 1rem;
             font-weight: 600;
         }
-        /* Floating WhatsApp Button */
         .whatsapp-float {
             position: fixed;
             bottom: 30px;
@@ -188,7 +181,6 @@
         .whatsapp-float .btn-wa i {
             font-size: 24px;
         }
-        /* Untuk layar kecil */
         @media (max-width: 576px) {
             .whatsapp-float .btn-wa {
                 padding: 10px 18px;
@@ -198,6 +190,25 @@
                 font-size: 20px;
             }
         }
+
+        /* Gaya tombol carousel */
+        .carousel-control-prev,
+        .carousel-control-next {
+            width: 5%;
+            background: none;
+            opacity: 0.8;
+        }
+        .carousel-control-prev-icon,
+        .carousel-control-next-icon {
+            background-color: #2f5d3a;
+            border-radius: 50%;
+            padding: 1rem;
+            background-size: 50%;
+        }
+        .carousel-control-prev:hover .carousel-control-prev-icon,
+        .carousel-control-next:hover .carousel-control-next-icon {
+            background-color: #1e3b24;
+        }
     </style>
 </head>
 <body>
@@ -205,7 +216,6 @@
     <nav class="navbar navbar-expand-lg navbar-light fixed-top shadow-sm">
         <div class="container">
             <a class="navbar-brand" href="#">
-                <!-- Logo baru masjid -->
                 <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' width='40' height='40'%3E%3Ccircle cx='50' cy='50' r='45' fill='%232f5d3a'/%3E%3Crect x='30' y='50' width='40' height='30' fill='%23f4c542' rx='4'/%3E%3Cpolygon points='50,15 25,50 75,50' fill='%23f4c542'/%3E%3Crect x='45' y='65' width='10' height='15' fill='%23d4a017' rx='2'/%3E%3Ccircle cx='30' cy='40' r='6' fill='%23f4c542'/%3E%3Ccircle cx='70' cy='40' r='6' fill='%23f4c542'/%3E%3Ccircle cx='30' cy='34' r='2' fill='%232f5d3a'/%3E%3Ccircle cx='70' cy='34' r='2' fill='%232f5d3a'/%3E%3C/svg%3E" alt="Logo Masjid Al-Ikhlas" width="40" class="d-inline-block align-text-middle me-2">
                 <span class="fw-bold">Masjid Al-Ikhlas</span> Ngijo
             </a>
@@ -220,7 +230,7 @@
                     <li class="nav-item"><a class="nav-link" href="#statistik">Statistik</a></li>
                     <li class="nav-item"><a class="nav-link" href="#kalkulator">Kalkulator</a></li>
                     <li class="nav-item"><a class="nav-link" href="#kontak">Kontak</a></li>
-                    <li class="nav-item"><a class="btn btn-success ms-lg-3 px-4" href="login.html">Login</a></li>
+                    <li class="nav-item" id="authNavItem"></li> <!-- tempat dinamis login/dropdown -->
                 </ul>
             </div>
         </div>
@@ -231,8 +241,6 @@
         <div class="container text-center" data-aos="fade-up">
             <h1 class="display-3 fw-bold">Selamat Datang di Masjid Al-Ikhlas Ngijo</h1>
             <p class="lead mb-4">Sistem Manajemen Zakat yang Transparan, Amanah, dan Modern</p>
-            
-            <!-- Timer Countdown Zakat Fitrah -->
             <div class="timer-container mt-4 text-white">
                 <h4 class="fw-semibold mb-3">⏳ Batas Pembayaran Zakat Fitrah</h4>
                 <div id="countdown" class="d-flex justify-content-center gap-2 gap-md-3 flex-wrap">
@@ -251,7 +259,6 @@
                 </div>
                 <p class="mt-2 small opacity-75">*Batas akhir: 19 Maret 2026 pukul 16.00 WIB</p>
             </div>
-
             <a href="#zakat" class="btn btn-warning btn-lg px-5 py-3 fw-semibold mt-4">Info Zakat</a>
         </div>
     </section>
@@ -275,63 +282,99 @@
         </div>
     </section>
 
-    <!-- Zakat Section dengan 4 card sejajar -->
+    <!-- Zakat Section dengan Carousel 3 Kartu per Slide (Slide 1) dan Slide 2 dengan dua kartu (flyer + jadwal) -->
     <section id="zakat" class="py-5 bg-light">
         <div class="container">
             <h2 class="section-title text-center">Informasi Zakat</h2>
-            <div class="row g-4">
-                <!-- Card 1: Zakat Fitrah -->
-                <div class="col-md-6 col-lg-3" data-aos="zoom-in">
-                    <div class="card h-100 shadow">
-                        <div class="card-body text-center p-4">
-                            <div class="bg-warning bg-opacity-10 rounded-circle mb-3">
-                                <i class="bi bi-archive fs-1 text-warning"></i>
+
+            <div id="zakatCarousel" class="carousel slide" data-bs-ride="false">
+                <div class="carousel-inner">
+                    <!-- Slide 1: 3 kartu pertama -->
+                    <div class="carousel-item active">
+                        <div class="row g-4 justify-content-center">
+                            <!-- Kartu Zakat Fitrah -->
+                            <div class="col-12 col-md-4">
+                                <div class="card h-100 shadow" data-aos="zoom-in">
+                                    <div class="card-body text-center p-4">
+                                        <div class="bg-warning bg-opacity-10 rounded-circle mb-3 mx-auto" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="bi bi-archive fs-1 text-warning"></i>
+                                        </div>
+                                        <h4 class="card-title fw-bold">Zakat Fitrah</h4>
+                                        <p class="card-text">Beras 2,6 kg <br> atau uang senilai <strong>Rp36.000,-</strong> per jiwa.</p>
+                                        <a href="#kalkulator" class="btn btn-sm btn-outline-warning">Kalkulator</a>
+                                    </div>
+                                </div>
                             </div>
-                            <h4 class="card-title fw-bold">Zakat Fitrah</h4>
-                            <p class="card-text">Beras 2,6 kg <br> atau uang senilai <strong>Rp36.000,-</strong> per jiwa.</p>
-                            <a href="#kalkulator" class="btn btn-sm btn-outline-warning">Kalkulator</a>
+                            <!-- Kartu Zakat Mal -->
+                            <div class="col-12 col-md-4">
+                                <div class="card h-100 shadow" data-aos="zoom-in" data-aos-delay="100">
+                                    <div class="card-body text-center p-4">
+                                        <div class="bg-success bg-opacity-10 rounded-circle mb-3 mx-auto" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="bi bi-cash-stack fs-1 text-success"></i>
+                                        </div>
+                                        <h4 class="card-title fw-bold">Zakat Mal</h4>
+                                        <p class="card-text">2,5% dari harta yang mencapai nisab (85 gram emas).</p>
+                                        <a href="#kalkulator" class="btn btn-sm btn-outline-success">Kalkulator</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Kartu Mustahik -->
+                            <div class="col-12 col-md-4">
+                                <div class="card h-100 shadow" data-aos="zoom-in" data-aos-delay="200">
+                                    <div class="card-body text-center p-4">
+                                        <div class="bg-info bg-opacity-10 rounded-circle mb-3 mx-auto" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="bi bi-people fs-1 text-info"></i>
+                                        </div>
+                                        <h4 class="card-title fw-bold">Mustahik</h4>
+                                        <p class="card-text">Disalurkan kepada 8 golongan yang berhak (fakir, miskin, amil, dll).</p>
+                                        <a href="#" class="btn btn-sm btn-outline-info">Pelajari</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Slide 2: Kartu Flyer dan Jadwal -->
+                    <div class="carousel-item">
+                        <div class="row g-4 justify-content-center">
+                            <!-- Kartu Flyer Zakat 1447 H -->
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100 shadow" data-aos="zoom-in" data-aos-delay="300">
+                                    <div class="card-body text-center p-4">
+                                        <div class="bg-danger bg-opacity-10 rounded-circle mb-3 mx-auto" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="bi bi-image fs-1 text-danger"></i>
+                                        </div>
+                                        <h4 class="card-title fw-bold">Zakat 1447 H</h4>
+                                        <img src="zakat1447h.webp" alt="Flyer Zakat 1447 H" class="flyer-thumb mt-2 mb-2" data-bs-toggle="modal" data-bs-target="#flyerModal">
+                                        <p class="card-text small text-secondary mt-2">Klik gambar untuk memperbesar</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Kartu Jadwal Penerimaan Zakat -->
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100 shadow" data-aos="zoom-in" data-aos-delay="400">
+                                    <div class="card-body text-center p-4">
+                                        <div class="bg-primary bg-opacity-10 rounded-circle mb-3 mx-auto" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="bi bi-calendar-event fs-1 text-primary"></i>
+                                        </div>
+                                        <h4 class="card-title fw-bold">Jadwal Zakat 2026</h4>
+                                        <img src="jadwal.webp" alt="Jadwal Penerimaan Zakat" class="flyer-thumb mt-2 mb-2" data-bs-toggle="modal" data-bs-target="#jadwalModal">
+                                        <p class="card-text small text-secondary mt-2">Klik gambar untuk memperbesar</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <!-- Card 2: Zakat Mal -->
-                <div class="col-md-6 col-lg-3" data-aos="zoom-in" data-aos-delay="100">
-                    <div class="card h-100 shadow">
-                        <div class="card-body text-center p-4">
-                            <div class="bg-success bg-opacity-10 rounded-circle mb-3">
-                                <i class="bi bi-cash-stack fs-1 text-success"></i>
-                            </div>
-                            <h4 class="card-title fw-bold">Zakat Mal</h4>
-                            <p class="card-text">2,5% dari harta yang mencapai nisab (85 gram emas).</p>
-                            <a href="#kalkulator" class="btn btn-sm btn-outline-success">Kalkulator</a>
-                        </div>
-                    </div>
-                </div>
-                <!-- Card 3: Mustahik -->
-                <div class="col-md-6 col-lg-3" data-aos="zoom-in" data-aos-delay="200">
-                    <div class="card h-100 shadow">
-                        <div class="card-body text-center p-4">
-                            <div class="bg-info bg-opacity-10 rounded-circle mb-3">
-                                <i class="bi bi-people fs-1 text-info"></i>
-                            </div>
-                            <h4 class="card-title fw-bold">Mustahik</h4>
-                            <p class="card-text">Disalurkan kepada 8 golongan yang berhak (fakir, miskin, amil, dll).</p>
-                            <a href="#" class="btn btn-sm btn-outline-info">Pelajari</a>
-                        </div>
-                    </div>
-                </div>
-                <!-- Card 4: Flyer Zakat (gambar) -->
-                <div class="col-md-6 col-lg-3" data-aos="zoom-in" data-aos-delay="300">
-                    <div class="card h-100 shadow">
-                        <div class="card-body text-center p-4">
-                            <div class="bg-danger bg-opacity-10 rounded-circle mb-3">
-                                <i class="bi bi-image fs-1 text-danger"></i>
-                            </div>
-                            <h4 class="card-title fw-bold">Zakat 1447 H</h4>
-                            <img src="zakat1447h.webp" alt="Flyer Zakat 1447 H" class="flyer-thumb mt-2 mb-2" data-bs-toggle="modal" data-bs-target="#flyerModal">
-                            <p class="card-text small text-secondary mt-2">Klik gambar untuk memperbesar</p>
-                        </div>
-                    </div>
-                </div>
+
+                <!-- Tombol navigasi kiri/kanan -->
+                <button class="carousel-control-prev" type="button" data-bs-target="#zakatCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Sebelumnya</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#zakatCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Berikutnya</span>
+                </button>
             </div>
         </div>
     </section>
@@ -479,6 +522,21 @@
         </div>
     </div>
 
+    <!-- Modal Popup untuk Jadwal -->
+    <div class="modal fade" id="jadwalModal" tabindex="-1" aria-labelledby="jadwalModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="jadwalModalLabel">Jadwal Penerimaan Zakat 2026</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="jadwal.webp" alt="Jadwal Penerimaan Zakat" class="modal-img">
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal WhatsApp Form -->
     <div class="modal fade" id="waModal" tabindex="-1" aria-labelledby="waModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -527,9 +585,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <!-- Loader untuk mengambil data real (statistik) -->
-    <script src="js/config.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/loader.js"></script>
+    <script src="/zakat/js/config.js"></script>
+    <script src="/zakat/js/api.js"></script>
+    <script src="/zakat/js/loader.js"></script>
     <script>
         AOS.init({ duration: 1000, once: true });
 
@@ -587,7 +645,6 @@
             setInterval(updateCountdown, 1000);
         }
 
-        // Set target: 19 Maret 2026 16:00 WIB (UTC+7)
         const targetDate = new Date('2026-03-19T16:00:00+07:00').getTime();
         startCountdown(targetDate);
 
@@ -629,7 +686,7 @@
             
             let currentSection = '';
             sections.forEach(section => {
-                const sectionTop = section.offsetTop - 100; // offset untuk navbar fixed
+                const sectionTop = section.offsetTop - 100;
                 const sectionBottom = sectionTop + section.offsetHeight;
                 if (window.scrollY >= sectionTop && window.scrollY < sectionBottom) {
                     currentSection = section.getAttribute('id');
@@ -648,7 +705,6 @@
         window.addEventListener('scroll', setActiveNav);
         window.addEventListener('load', setActiveNav);
 
-        // Fungsi kirim WhatsApp dari modal
         function kirimWA() {
             const nama = document.getElementById('waNama').value.trim();
             const alamat = document.getElementById('waAlamat').value.trim();
@@ -660,20 +716,54 @@
                 return;
             }
 
-            // Format pesan
             const pesan = `Nama: ${nama}%0AAlamat: ${alamat}%0APertanyaan: ${pertanyaan}`;
             const waUrl = `https://wa.me/6283866675521?text=${pesan}`;
             
-            // Buka WhatsApp
             window.open(waUrl, '_blank');
 
-            // Tutup modal (opsional)
             const modal = bootstrap.Modal.getInstance(document.getElementById('waModal'));
             modal.hide();
-
-            // Reset form
             document.getElementById('waForm').reset();
         }
+    </script>
+    <!-- Script untuk mengecek status login dan menampilkan dropdown user -->
+    <script>
+        function updateNavbarAuth() {
+            const authNavItem = document.getElementById('authNavItem');
+            if (!authNavItem) return;
+
+            const userJson = localStorage.getItem('user');
+            if (userJson) {
+                try {
+                    const user = JSON.parse(userJson);
+                    const displayName = user.nama || user.email || 'User';
+                    authNavItem.innerHTML = `
+                        <div class="dropdown">
+                            <button class="btn btn-outline-success dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle"></i> ${displayName}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="${user.role}/dashboard.html">Dashboard</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" onclick="logout()">Logout</a></li>
+                            </ul>
+                        </div>
+                    `;
+                } catch (e) {
+                    localStorage.removeItem('user');
+                    authNavItem.innerHTML = `<a class="btn btn-success ms-lg-3 px-4" href="login.html">Login</a>`;
+                }
+            } else {
+                authNavItem.innerHTML = `<a class="btn btn-success ms-lg-3 px-4" href="login.html">Login</a>`;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = 'index.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', updateNavbarAuth);
     </script>
 </body>
 </html>
