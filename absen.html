@@ -113,7 +113,7 @@
             display: block;
             width: 100%;
             height: auto;
-            max-height: 100px; /* Diperkecil dari 120px */
+            max-height: 70px; /* Diperkecil */
             background: white;
             border-radius: 12px;
             touch-action: none;
@@ -250,14 +250,14 @@
             <div class="mb-4">
                 <label class="form-label"><i class="bi bi-pencil me-1"></i>Tanda Tangan Digital</label>
                 <div class="signature-area">
-                    <!-- Ukuran canvas diperkecil menjadi 250x100 (sebelumnya 300x120) -->
-                    <canvas id="signatureCanvas" width="250" height="100"></canvas>
+                    <!-- Ukuran canvas diperkecil menjadi 180x70 -->
+                    <canvas id="signatureCanvas" width="180" height="70"></canvas>
                 </div>
                 <div class="signature-buttons">
                     <button type="button" class="btn btn-outline-secondary" id="clearSignature">Hapus</button>
                     <button type="button" class="btn btn-outline-primary" id="undoSignature">Undo</button>
                 </div>
-                <div class="form-text mt-2">Tanda tangani di area ini (bisa dengan jari)</div>
+                <div class="form-text mt-2">Tanda tangani di area ini (cukup goresan sederhana)</div>
             </div>
 
             <!-- Tombol Submit -->
@@ -330,15 +330,16 @@
         }
 
         // =====================================================
-        // SIGNATURE PAD - dengan ukuran canvas yang disesuaikan
+        // SIGNATURE PAD - dengan ukuran canvas yang diperkecil
         // =====================================================
         function initSignaturePad() {
             const canvas = document.getElementById('signatureCanvas');
             if (!canvas) return;
 
-            // Set ukuran canvas sesuai atribut HTML (250x100)
-            canvas.width = 250;
-            canvas.height = 100;
+            // Ukuran canvas sudah di-set di HTML (180x70)
+            // Pastikan dimensi canvas sesuai
+            canvas.width = 180;
+            canvas.height = 70;
 
             signaturePad = new SignaturePad(canvas, {
                 backgroundColor: 'white',
@@ -508,7 +509,7 @@
         };
 
         // =====================================================
-        // SUBMIT ABSEN - dengan kualitas kompresi diturunkan menjadi 0.2
+        // SUBMIT ABSEN - dengan kualitas kompresi diturunkan
         // =====================================================
         window.submitAbsen = async function() {
             let id_sesi, password, nama;
@@ -548,15 +549,21 @@
                 return;
             }
 
-            // Turunkan kualitas dari 0.4 menjadi 0.2 (lebih kecil)
-            const ttdBase64 = signaturePad.toDataURL('image/jpeg', 0.2);
+            // Ambil tanda tangan dengan kualitas rendah (0.1) - lebih kecil dari sebelumnya
+            const ttdBase64 = signaturePad.toDataURL('image/jpeg', 0.1);
+
+            // Validasi perkiraan ukuran base64 (opsional)
+            if (ttdBase64.length > 5000) {
+                console.warn('Ukuran base64 cukup besar:', ttdBase64.length);
+                // Tetap lanjut, tapi beri peringatan di konsol
+            }
 
             btn.disabled = true;
             submitText.classList.add('d-none');
             submitSpinner.classList.remove('d-none');
 
             try {
-                console.log('Mengirim data absen:', { id_sesi, nama, password, lat, lng });
+                console.log('Mengirim data absen:', { id_sesi, nama, password, lat, lng, ttd_length: ttdBase64.length });
                 const result = await apiAbsen({
                     id_sesi: id_sesi,
                     nama_petugas: nama,
@@ -579,7 +586,14 @@
                 if (!isQRMode) loadSesiAktif(true);
             } catch (error) {
                 console.error('Error detail:', error);
-                showToast('Gagal mengirim absen: ' + (error.message || 'Periksa koneksi'), 'danger');
+                // Tampilkan pesan error yang lebih ramah
+                let errorMsg = error.message || 'Terjadi kesalahan';
+                if (errorMsg.includes('terlalu besar')) {
+                    errorMsg = 'Tanda tangan terlalu besar. Coba dengan goresan yang lebih sederhana.';
+                } else if (errorMsg.includes('timeout')) {
+                    errorMsg = 'Koneksi lambat, coba lagi.';
+                }
+                showToast('Gagal mengirim absen: ' + errorMsg, 'danger');
             } finally {
                 btn.disabled = false;
                 submitText.classList.remove('d-none');
@@ -633,6 +647,7 @@
                 loadSesiAktif(false);
             }
 
+            // Inisialisasi signature pad setelah DOM siap
             setTimeout(() => {
                 initSignaturePad();
             }, 100);
