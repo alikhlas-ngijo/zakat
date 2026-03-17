@@ -541,16 +541,6 @@
             renderTable(allData);
         }
 
-        // Fungsi untuk me-refresh data dari server dan memperbarui tabel
-        async function refreshData() {
-            try {
-                await LOADER.loadAllData(true);
-                loadDataFromCache();
-            } catch (error) {
-                showToast('Gagal memperbarui data: ' + error.message, 'danger');
-            }
-        }
-
         // ====================== FUNGSI CRUD ======================
         window.tambahSesi = function() {
             document.getElementById('formModalLabel').innerText = 'Tambah Sesi Absensi';
@@ -593,9 +583,14 @@
         window.hapusSesi = async function(id) {
             if (!confirm('Yakin ingin menghapus sesi ini? Semua data absensi terkait akan ikut terhapus.')) return;
             try {
-                await apiDelete('sesi_absen', id); // apiDelete akan throw jika gagal
-                showToast('Sesi berhasil dihapus');
-                await refreshData();
+                const result = await apiDelete('sesi_absen', id);
+                if (result.success) {
+                    showToast('Sesi berhasil dihapus');
+                    await LOADER.loadAllData(true);
+                    loadDataFromCache();
+                } else {
+                    showToast('Gagal menghapus: ' + (result.error || 'Unknown error'), 'danger');
+                }
             } catch (error) {
                 showToast('Gagal menghapus: ' + error.message, 'danger');
             }
@@ -631,9 +626,14 @@
             if (!confirm('Regenerate QR akan membuat token baru dan QR lama tidak bisa digunakan lagi. Lanjutkan?')) return;
             try {
                 const newToken = generateToken();
-                await apiUpdate('sesi_absen', id, { password: newToken });
-                showToast('Token QR berhasil diperbarui');
-                await refreshData();
+                const result = await apiUpdate('sesi_absen', id, { password: newToken });
+                if (result.success) {
+                    showToast('Token QR berhasil diperbarui');
+                    await LOADER.loadAllData(true);
+                    loadDataFromCache();
+                } else {
+                    showToast('Gagal regenerate: ' + (result.error || 'Unknown error'), 'danger');
+                }
             } catch (error) {
                 showToast('Gagal regenerate: ' + error.message, 'danger');
             }
@@ -641,10 +641,6 @@
 
         window.lihatKehadiran = async function(id, namaSesi) {
             try {
-                // Pastikan data absen terbaru diambil dari cache (refresh jika perlu)
-                if (!LOADER.getData('absen_petugas').length) {
-                    await LOADER.loadAllData(true);
-                }
                 const absensi = LOADER.getData('absen_petugas');
                 const attendees = absensi.filter(a => a.id_sesi == id);
                 let detailHtml = `<h6>Daftar Hadir Sesi: ${escapeHtml(namaSesi)}</h6>`;
@@ -697,12 +693,6 @@
                 return;
             }
 
-            // Disable tombol submit
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Menyimpan...';
-
             try {
                 if (id) {
                     // Edit
@@ -715,8 +705,12 @@
                     if (password) {
                         data.password = password;
                     }
-                    await apiUpdate('sesi_absen', id, data);
-                    showToast('Sesi berhasil diperbarui');
+                    const result = await apiUpdate('sesi_absen', id, data);
+                    if (result.success) {
+                        showToast('Sesi diperbarui');
+                    } else {
+                        showToast('Gagal memperbarui: ' + (result.error || 'Unknown error'), 'danger');
+                    }
                 } else {
                     // Tambah
                     if (!password) password = generateToken();
@@ -731,18 +725,18 @@
                         qr_code: '',
                         createdBy: user.email
                     };
-                    await apiPost('sesi_absen', data);
-                    showToast('Sesi berhasil ditambahkan');
+                    const result = await apiPost('sesi_absen', data);
+                    if (result.success) {
+                        showToast('Sesi ditambahkan');
+                    } else {
+                        showToast('Gagal menambah: ' + (result.error || 'Unknown error'), 'danger');
+                    }
                 }
-
                 modalInstance.hide();
-                await refreshData();
+                await LOADER.loadAllData(true);
+                loadDataFromCache();
             } catch (error) {
                 showToast('Gagal menyimpan: ' + error.message, 'danger');
-            } finally {
-                // Aktifkan kembali tombol
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
             }
         });
 
