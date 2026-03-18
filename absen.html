@@ -549,8 +549,8 @@
                 return;
             }
 
-            // Ambil tanda tangan dengan kualitas rendah (0.1) - lebih kecil dari sebelumnya
-            const ttdBase64 = signaturePad.toDataURL('image/jpeg', 0.1);
+            // Ambil tanda tangan dengan kualitas rendah (0.2) - lebih kecil dari sebelumnya
+            const ttdBase64 = signaturePad.toDataURL('image/jpeg', 0.2);
 
             // Validasi perkiraan ukuran base64 (opsional)
             if (ttdBase64.length > 5000) {
